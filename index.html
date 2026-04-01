@@ -235,8 +235,9 @@ async function loadData(){
     document.getElementById("content").innerHTML="❌ Firebase error";
   }
 }
-await initData();
-await loadData();
+initData().then(() => {
+  loadData();
+});
 </script>
 </body>
 </html>
