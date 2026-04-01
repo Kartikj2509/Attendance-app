@@ -1,223 +1,136 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Kartik ❤️ Tara Ultimate</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<title>Kartik ❤️ Tara</title>
 
 <style>
-body {
-    font-family: 'Segoe UI';
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    color: white;
-    text-align: center;
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
-.container {
-    background: #1e293b;
-    padding: 20px;
-    margin: 20px auto;
-    width: 400px;
-    border-radius: 15px;
+.container{
+  width:350px;
+  padding:20px;
+  border-radius:20px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  text-align:center;
 }
-button {
-    padding: 8px;
-    margin: 5px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
+button{
+  margin:5px;
+  padding:8px 12px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
 }
-.toggle { background: #3b82f6; }
-.mode { background: #9333ea; }
-.timetableBtn { background: #f59e0b; }
-.present { background: #22c55e; }
-.bunk { background: #ef4444; }
-.card {
-    background: #334155;
-    margin: 10px;
-    padding: 12px;
-    border-radius: 10px;
+.present{background:#2ecc71;color:white;}
+.bunk{background:#e74c3c;color:white;}
+.switch{background:#3498db;color:white;}
+.track{background:#8e44ad;color:white;}
+.tt{background:#f39c12;color:white;}
+.card{
+  background:rgba(255,255,255,0.1);
+  padding:10px;
+  margin:10px 0;
+  border-radius:10px;
 }
-.big { font-size:18px; margin:8px; }
-.highlight { color:#22c55e; }
 </style>
 </head>
 
 <body>
-
 <div class="container">
-    <h2 id="userTitle">👤 Kartik</h2>
+  <h2 id="name">Kartik</h2>
+  <h3 id="overall"></h3>
+  <h4 id="nextClass"></h4>
 
-    <div class="big" id="overall"></div>
-    <div class="big highlight" id="nextClass"></div>
+  <button class="switch" onclick="switchUser()">Switch ❤️</button>
+  <button class="track" onclick="toggleMode()">Tracker 📊</button>
+  <button class="tt" onclick="toggleTT()">Timetable 📅</button>
 
-    <button class="toggle" onclick="switchUser()">Switch ❤️</button>
-    <button class="mode" onclick="toggleMode()">Tracker 🔁</button>
-    <button class="timetableBtn" onclick="showTimetable()">Timetable 🏫</button>
-
-    <h3 id="heading"></h3>
-    <div id="content"></div>
-
-    <canvas id="chart"></canvas>
+  <div id="content">⏳ Loading...</div>
 </div>
 
 <script type="module">
-
-// ===== FIREBASE =====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyA3R5plHfBl1VU2MOenTYIZJEKRQ0iIcZQ",
-    authDomain: "attendance-ea8db.firebaseapp.com",
-    projectId: "attendance-ea8db",
-    storageBucket: "attendance-ea8db.firebasestorage.app",
-    messagingSenderId: "892923950327",
-    appId: "1:892923950327:web:4b432caad184d0b5280ff2",
-    measurementId: "G-DG8E73CTRP"
+  apiKey: "AIzaSyA3R5plHfBl1VU2MOenTYIZJEKRQ0iIcZQ",
+  authDomain: "attendance-ea8db.firebaseapp.com",
+  projectId: "attendance-ea8db",
+  storageBucket: "attendance-ea8db.firebasestorage.app",
+  messagingSenderId: "892923950327",
+  appId: "1:892923950327:web:4b432caad184d0b5280ff2",
+  measurementId: "G-DG8E73CTRP"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ===== GLOBAL =====
 let currentUser="kartik";
+let data=null;
 let mode="today";
 let timetableMode=false;
-let data={};
 
-// ===== TIMETABLE =====
-let timetable={
+const timetable={
 Monday:[
-{sub:"DBMS",time:"8:00-8:50",room:"VIB 502"},
-{sub:"Java",time:"8:50-9:40",room:"VIB 502"},
-{sub:"ANN",time:"10:30-11:20",room:"VIB 207"},
-{sub:"DBMS Lab",time:"11:20-12:50",room:"VIB 411"}
-],
-Tuesday:[
-{sub:"Java Lab",time:"9:40-11:20",room:"VIB 412"},
-{sub:"Life Skills",time:"12:05-12:50",room:"NYB 005"}
+{sub:"DBMS",time:"8:00",room:"VIB 502"},
+{sub:"Java",time:"8:50",room:"VIB 502"},
+{sub:"ANN",time:"10:30",room:"VIB 207"}
 ],
 Wednesday:[
-{sub:"DBMS",time:"11:20-12:05",room:"NYB 312"},
-{sub:"COD",time:"12:05-12:50",room:"NYB 312"}
-],
-Thursday:[
-{sub:"ANN",time:"8:00-8:50",room:"KAB 306"},
-{sub:"COD",time:"11:20-12:05",room:"NYB 312"},
-{sub:"Java",time:"12:05-12:50",room:"VIB 016"}
-],
-Friday:[
-{sub:"COD",time:"8:00-8:50",room:"VIB 307"},
-{sub:"Life Skills",time:"8:50-9:40",room:"VIB 013"},
-{sub:"DBMS",time:"9:40-10:30",room:"NYB 312"},
-{sub:"ANN",time:"11:20-12:05",room:"NYB 312"},
-{sub:"Java",time:"12:05-12:50",room:"VIB 103"}
-],
-Saturday:[
-{sub:"ANN Lab",time:"8:50-10:30",room:"VIB 412"},
-{sub:"DBMS",time:"10:30-11:20",room:"NYB 001"}
+{sub:"DBMS",time:"11:20",room:"NYB 312"},
+{sub:"COD",time:"12:05",room:"NYB 312"}
 ]
 };
 
-// ===== LOAD =====
-async function loadData(){
-  const ref=doc(db,"attendance","shared");
-  const snap=await getDoc(ref);
-
-  if(snap.exists()){
-    data=snap.data();
-  } else {
-    data={
-      kartik:{
-        COD:{p:18,t:22},DBMS:{p:24,t:28},"DBMS Lab":{p:7,t:8},
-        Java:{p:21,t:23},"Java Lab":{p:8,t:8},
-        ANN:{p:17,t:22},"ANN Lab":{p:5,t:6},
-        "Life Skills":{p:15,t:16}
-      },
-      tara:{
-        COD:{p:17,t:20},DBMS:{p:25,t:27},"DBMS Lab":{p:6,t:7},
-        Java:{p:19,t:21},"Java Lab":{p:8,t:8},
-        ANN:{p:19,t:22},"ANN Lab":{p:6,t:6},
-        "Life Skills":{p:14,t:15}
-      }
-    };
-    await setDoc(ref,data);
-  }
-
-  render();
-}
-
-// ===== SAVE =====
-async function saveData(){
-  await setDoc(doc(db,"attendance","shared"),data);
-}
-
-// ===== MARK =====
-async function mark(sub,type){
-  if(type==="present"){
-    data[currentUser][sub].p++;
-    data[currentUser][sub].t++;
-  } else data[currentUser][sub].t++;
-
-  await saveData();
-  render();
-}
-
-// ===== NEXT CLASS =====
-function getMinutes(t){
-  let [h,m]=t.split(":").map(Number);
-  return h*60+m;
-}
-
-function getNextClass(){
-  let now=new Date();
-  let mins=now.getHours()*60+now.getMinutes();
-  let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-  let today=days[now.getDay()];
-  let list=timetable[today]||[];
-
-  for(let c of list){
-    let [s,e]=c.time.split("-");
-    let start=getMinutes(s);
-    let end=getMinutes(e);
-
-    if(mins>=start && mins<=end) return "🟢 "+c.sub+" ("+c.room+")";
-    if(mins<start) return "⏭️ "+c.sub+" ("+c.room+")";
-  }
-
-  return "🎉 No more classes";
-}
-
-// ===== OVERALL =====
-function overall(){
-  let p=0,t=0;
-  Object.values(data[currentUser]).forEach(s=>{p+=s.p;t+=s.t});
-  return ((p/t)*100).toFixed(2);
-}
-
-// ===== UI =====
 function switchUser(){
-  currentUser=currentUser==="kartik"?"tara":"kartik";
-  document.getElementById("userTitle").innerText=currentUser==="kartik"?"👤 Kartik":"💖 Tara";
-  render();
+currentUser=currentUser==="kartik"?"tara":"kartik";
+document.getElementById("name").innerText=currentUser==="kartik"?"Kartik":"Tara";
+render();
 }
 
 function toggleMode(){
-  timetableMode=false;
-  mode=mode==="today"?"week":"today";
-  render();
+mode=mode==="today"?"all":"today";
+render();
 }
 
-function showTimetable(){
-  timetableMode=true;
-  render();
+function toggleTT(){
+timetableMode=!timetableMode;
+render();
 }
 
-// ===== RENDER =====
+function overall(){
+let u=data[currentUser];
+let p=0,t=0;
+Object.values(u).forEach(s=>{p+=s.p;t+=s.t;});
+return ((p/t)*100).toFixed(2);
+}
+
+function getNextClass(){
+return "⏭️ DBMS (NYB 312)";
+}
+
+async function mark(sub,type){
+let d=data[currentUser][sub];
+d.t++;
+if(type==="present") d.p++;
+await setDoc(doc(db,"attendance","shared"),data);
+render();
+}
+
 function render(){
 
 if(!data || !data[currentUser]){
-    document.getElementById("content").innerHTML = "⏳ Loading...";
-    return;
+document.getElementById("content").innerHTML="⏳ Loading...";
+return;
 }
 
 document.getElementById("overall").innerText="📊 "+overall()+"%";
@@ -225,9 +138,6 @@ document.getElementById("nextClass").innerText=getNextClass();
 
 let c=document.getElementById("content");
 c.innerHTML="";
-
-let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-let today=days[new Date().getDay()];
 
 if(timetableMode){
 Object.keys(timetable).forEach(day=>{
@@ -239,14 +149,14 @@ c.innerHTML+=`<div class="card">${i.sub}<br>${i.time}<br>${i.room}</div>`;
 return;
 }
 
+let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+let today=days[new Date().getDay()];
 let show=mode==="today"?[today]:Object.keys(timetable);
 
 show.forEach(day=>{
 c.innerHTML+=`<h3>${day}</h3>`;
 timetable[day].forEach(i=>{
-
 let d=data[currentUser][i.sub];
-
 if(!d) return;
 
 let per=((d.p/d.t)*100).toFixed(2);
@@ -264,11 +174,46 @@ ${per}% (${d.p}/${d.t})<br>
 
 }
 
-// ===== START =====
-loadData();
+// 🔥 AUTO INIT DATA (runs once)
+async function initData(){
+const ref=doc(db,"attendance","shared");
+const snap=await getDoc(ref);
 
-window.mark=mark;
-window.switchUser=switchUser;
+if(!snap.exists()){
+await setDoc(ref,{
+kartik:{
+COD:{p:18,t:22},
+DBMS:{p:24,t:28},
+"DBMS Lab":{p:7,t:8},
+Java:{p:21,t:23},
+"Java Lab":{p:8,t:8},
+ANN:{p:17,t:22},
+"ANN Lab":{p:5,t:6},
+"Life Skills":{p:15,t:16}
+},
+tara:{
+COD:{p:17,t:20},
+DBMS:{p:25,t:27},
+"DBMS Lab":{p:6,t:7},
+Java:{p:19,t:21},
+"Java Lab":{p:8,t:8},
+ANN:{p:19,t:22},
+"ANN Lab":{p:6,t:6},
+"Life Skills":{p:14,t:15}
+}
+});
+}
+}
+
+// load data
+async function loadData(){
+const snap=await getDoc(doc(db,"attendance","shared"));
+data=snap.data();
+render();
+}
+
+await initData();
+await loadData();
 
 </script>
 </body>
