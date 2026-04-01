@@ -207,13 +207,29 @@ ANN:{p:19,t:22},
 
 // load data
 async function loadData(){
-const snap=await getDoc(doc(db,"attendance","shared"));
-data=snap.data();
-render();
-}
+  try{
+    const ref = doc(db,"attendance","shared");
+    const snap = await getDoc(ref);
 
-await initData();
-await loadData();
+    if(snap.exists()){
+      data = snap.data();
+      console.log("DATA:", data); // debug
+    } else {
+      console.log("No data found ❌");
+    }
+
+    if(!data || !data.kartik){
+      document.getElementById("content").innerHTML="❌ No data loaded";
+      return;
+    }
+
+    render();
+
+  } catch(e){
+    console.error("Firebase error:", e);
+    document.getElementById("content").innerHTML="❌ Firebase error";
+  }
+}
 
 </script>
 </body>
