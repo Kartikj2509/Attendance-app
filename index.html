@@ -12,14 +12,12 @@ body{
   color:white;
 }
 
-/* 🔥 center but allow scroll */
 .wrapper{
   display:flex;
   justify-content:center;
   padding:20px;
 }
 
-/* 🔥 responsive width */
 .container{
   width:100%;
   max-width:900px;
@@ -29,10 +27,8 @@ body{
   backdrop-filter:blur(10px);
 }
 
-/* 🔥 buttons always visible */
 .top{
   text-align:center;
-  margin-bottom:10px;
 }
 
 button{
@@ -57,14 +53,12 @@ button{
   border-radius:12px;
 }
 
-/* 🔥 graph bar */
 .bar{
   height:6px;
   border-radius:5px;
   margin:5px 0;
 }
 
-/* 📱 mobile */
 @media(max-width:600px){
   .container{padding:15px;}
 }
@@ -96,7 +90,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const app = initializeApp({
-  apiKey:"AIzaSy...",
+  apiKey:"AIzaSyA3R5plHfBl1VU2MOenTYIZJEKRQ0iIcZQ",
   authDomain:"attendance-ea8db.firebaseapp.com",
   projectId:"attendance-ea8db"
 });
@@ -108,7 +102,7 @@ let data=null;
 let mode="all";
 let timetableMode=false;
 
-/* ✅ FULL TIMETABLE */
+/* FULL TIMETABLE */
 const timetable={
 Monday:[
 {sub:"DBMS",time:"8:00"},
@@ -134,11 +128,12 @@ Friday:[
 {sub:"ANN Lab",time:"11:20"}
 ],
 Saturday:[
-{sub:"Java",time:"10:00"}
+{sub:"Java",time:"10:00"},
+{sub:"DBMS",time:"11:00"}
 ]
 };
 
-/* 🔥 BUTTON FIX */
+/* BUTTONS */
 window.switchUser=function(){
   currentUser=currentUser==="kartik"?"tara":"kartik";
   document.getElementById("name").innerText=currentUser==="kartik"?"Kartik":"Tara";
@@ -152,83 +147,116 @@ window.toggleMode=function(){
 
 window.toggleTT=function(){
   timetableMode=!timetableMode;
+  document.querySelector(".tt").innerText=
+    timetableMode ? "Back 📊" : "Timetable 📅";
   render();
 }
 
 window.mark=async function(sub,type){
-  let d=data[currentUser][sub] || {p:0,t:0};
+  let d=data[currentUser][sub]||{p:0,t:0};
   d.t++;
   if(type==="present") d.p++;
   data[currentUser][sub]=d;
+
   await setDoc(doc(db,"attendance","shared"),data);
   render();
 }
 
-/* 🔥 NEXT CLASS */
+/* NEXT CLASS */
 function getNextClass(){
   let now=new Date();
   let h=now.getHours()+now.getMinutes()/60;
 
-  for(let day of Object.keys(timetable)){
-    for(let cls of timetable[day]){
-      let t=parseFloat(cls.time);
-      if(t>h) return `⏭️ ${cls.sub}`;
-    }
+  let today=new Date().toLocaleString('en-US',{weekday:'long'});
+  let list=timetable[today]||[];
+
+  for(let c of list){
+    let t=parseFloat(c.time);
+    if(t>h) return "⏭️ "+c.sub;
   }
-  return "🎉 Done for today";
+  return "🎉 No more classes";
 }
 
-/* 🔥 RENDER */
-function render(){
-
-  if(!data) return;
-
-  document.getElementById("overall").innerText="📊 "+overall()+"%";
-  document.getElementById("nextClass").innerText=getNextClass();
-
-  let c=document.getElementById("content");
-  c.innerHTML="";
-
-  let show=mode==="today"
-    ? [new Date().toLocaleString('en-US',{weekday:'long'})]
-    : Object.keys(timetable);
-
-  show.forEach(day=>{
-    if(!timetable[day]) return;
-
-    c.innerHTML+=`<h3>${day}</h3>`;
-
-    timetable[day].forEach(i=>{
-      let d=data[currentUser][i.sub]||{p:0,t:0};
-
-      let per=d.t?((d.p/d.t)*100).toFixed(1):0;
-
-      let color=per<75?"red":per<85?"orange":"lightgreen";
-
-      c.innerHTML+=`
-      <div class="card">
-      <b>${i.sub}</b><br>
-      ${i.time}<br>
-      ${per}% (${d.p}/${d.t})<br>
-
-      <div class="bar" style="background:${color};width:${per}%"></div>
-
-      <button class="present" onclick="mark('${i.sub}','present')">Present</button>
-      <button class="bunk" onclick="mark('${i.sub}','bunk')">Bunk</button>
-      </div>`;
-    });
-  });
-}
-
-/* 🔥 OVERALL */
+/* CALCULATIONS */
 function overall(){
   let u=data[currentUser];
   let p=0,t=0;
-  Object.values(u).forEach(s=>{p+=s.p;t+=s.t;});
+  Object.values(u).forEach(s=>{p+=s.p;t+=s.t});
   return ((p/t)*100).toFixed(2);
 }
 
-/* 🔥 LOAD */
+function calcBunk(p,t){
+  let x=Math.floor((p/0.75)-t);
+  return x>0?x:0;
+}
+
+function need75(p,t){
+  let x=Math.ceil((0.75*t-p)/0.25);
+  return x>0?x:0;
+}
+
+/* RENDER */
+function render(){
+
+if(!data) return;
+
+document.getElementById("overall").innerText="📊 "+overall()+"%";
+document.getElementById("nextClass").innerText=getNextClass();
+
+let c=document.getElementById("content");
+c.innerHTML="";
+
+/* 🔥 TIMETABLE MODE */
+if(timetableMode){
+  Object.keys(timetable).forEach(day=>{
+    c.innerHTML+=`<h3>${day}</h3>`;
+    timetable[day].forEach(i=>{
+      c.innerHTML+=`
+      <div class="card">
+      <b>${i.sub}</b><br>${i.time}
+      </div>`;
+    });
+  });
+  return;
+}
+
+/* NORMAL MODE */
+let today=new Date().toLocaleString('en-US',{weekday:'long'});
+let show=mode==="today" ? [today] : Object.keys(timetable);
+
+show.forEach(day=>{
+  if(!timetable[day]) return;
+
+  c.innerHTML+=`<h3>${day}</h3>`;
+
+  timetable[day].forEach(i=>{
+    let d=data[currentUser][i.sub]||{p:0,t:0};
+    let per=d.t?((d.p/d.t)*100).toFixed(1):0;
+
+    let color=per<75?"red":per<85?"orange":"lightgreen";
+    let status=per<75?"⚠️ Low":per<85?"⚡ Careful":"✅ Safe";
+
+    c.innerHTML+=`
+    <div class="card">
+    <b>${i.sub}</b><br>
+    ${i.time}<br>
+    ${per}% (${d.p}/${d.t})<br>
+
+    <div class="bar" style="background:${color};width:${per}%"></div>
+    <div style="color:${color}">${status}</div>
+
+    <div>😎 Can bunk: ${calcBunk(d.p,d.t)}</div>
+    <div>📈 Need for 75%: ${need75(d.p,d.t)}</div>
+
+    <button class="present" onclick="mark('${i.sub}','present')">Present</button>
+    <button class="bunk" onclick="mark('${i.sub}','bunk')">Bunk</button>
+    </div>`;
+  });
+});
+
+}
+
+/* LOAD */
 async function load(){
   let snap=await getDoc(doc(db,"attendance","shared"));
   if(snap.exists()){
