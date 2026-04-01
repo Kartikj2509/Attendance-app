@@ -228,7 +228,23 @@ document.getElementById("overall").innerText="📊 "+overall()+"%";
 let c=document.getElementById("content");
 c.innerHTML="";
 
-/* tracker */
+/* timetable mode */
+if(timetableMode){
+  Object.keys(timetable).forEach(day=>{
+    c.innerHTML+=`<h3>${day}</h3>`;
+    timetable[day].forEach(i=>{
+      c.innerHTML+=`
+      <div class="card">
+      <b>${i.sub}</b><br>
+      ⏰ ${i.time}<br>
+      📍 ${i.room}
+      </div>`;
+    });
+  });
+  return;
+}
+
+/* tracker mode */
 let subjects={};
 
 Object.keys(timetable).forEach(day=>{
@@ -271,6 +287,8 @@ Object.values(subjects).forEach(i=>{
     </div>
   </div>`;
 });
+
+}
 /* timetable */
 if(timetableMode){
   Object.keys(timetable).forEach(day=>{
