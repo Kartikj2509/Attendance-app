@@ -214,6 +214,12 @@ function showTimetable(){
 
 // ===== RENDER =====
 function render(){
+
+if(!data || !data[currentUser]){
+    document.getElementById("content").innerHTML = "⏳ Loading...";
+    return;
+}
+
 document.getElementById("overall").innerText="📊 "+overall()+"%";
 document.getElementById("nextClass").innerText=getNextClass();
 
@@ -238,7 +244,11 @@ let show=mode==="today"?[today]:Object.keys(timetable);
 show.forEach(day=>{
 c.innerHTML+=`<h3>${day}</h3>`;
 timetable[day].forEach(i=>{
+
 let d=data[currentUser][i.sub];
+
+if(!d) return;
+
 let per=((d.p/d.t)*100).toFixed(2);
 
 c.innerHTML+=`
