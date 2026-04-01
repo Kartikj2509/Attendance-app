@@ -226,22 +226,51 @@ if(!data) return;
 document.getElementById("overall").innerText="📊 "+overall()+"%";
 
 let c=document.getElementById("content");
-c.innerHTML+=`
-<div class="${cls}">
-  <b>${i.sub}</b><br>
-  📍 ${i.room}<br>
+c.innerHTML="";
 
-  ${per}% (${d.p}/${d.t})<br>
+/* tracker */
+let subjects={};
 
-<div class="bar-container">
-  <div class="bar" style="
-    width:${per}%;
-    background:${per<75?'#e74c3c':per<85?'#f39c12':'#2ecc71'};
-  "> </div>
-</div>
+Object.keys(timetable).forEach(day=>{
+  timetable[day].forEach(i=>{
+    subjects[i.sub]=i;
+  });
+});
 
- 
+Object.values(subjects).forEach(i=>{
+  let d=data[currentUser][i.sub]||{p:0,t:0,history:[]};
+  let per=d.t?((d.p/d.t)*100).toFixed(1):0;
 
+  let cls="card";
+  let last=d.history?.[d.history.length-1];
+
+  if(last==="present") cls+=" done-present";
+  if(last==="bunk") cls+=" done-bunk";
+
+  c.innerHTML+=`
+  <div class="${cls}">
+    <b>${i.sub}</b><br>
+    📍 ${i.room}<br>
+
+    ${per}% (${d.p}/${d.t})<br>
+
+    <div class="bar-container">
+      <div class="bar" style="
+        width:${per}%;
+        background:${per<75?'#e74c3c':per<85?'#f39c12':'#2ecc71'};
+      "></div>
+    </div>
+
+    <div>😎 Can bunk: ${calcBunk(d.p,d.t)}</div>
+    <div>📈 Need for 75%: ${need75(d.p,d.t)}</div>
+
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="present" onclick="mark('${i.sub}','present')">➕</button>
+      <button class="bunk" onclick="mark('${i.sub}','bunk')">❌</button>
+      <button style="background:#555;" onclick="undo('${i.sub}')">➖</button>
+    </div>
+  </div>`;
+});
 /* timetable */
 if(timetableMode){
   Object.keys(timetable).forEach(day=>{
