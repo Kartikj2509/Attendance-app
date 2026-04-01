@@ -102,38 +102,38 @@ let data=null;
 let mode="all";
 let timetableMode=false;
 
-/* FULL TIMETABLE */
+/* ✅ FULL TIMETABLE WITH ROOMS */
 const timetable={
 Monday:[
-{sub:"DBMS",time:"8:00"},
-{sub:"Java",time:"8:50"},
-{sub:"ANN",time:"10:30"},
-{sub:"DBMS Lab",time:"11:20"}
+{sub:"DBMS",time:"8:00",room:"VIB 502"},
+{sub:"Java",time:"8:50",room:"VIB 502"},
+{sub:"ANN",time:"10:30",room:"VIB 207"},
+{sub:"DBMS Lab",time:"11:20",room:"VIB 411"}
 ],
 Tuesday:[
-{sub:"Java Lab",time:"9:40"},
-{sub:"Life Skills",time:"12:05"}
+{sub:"Java Lab",time:"9:40",room:"VIB 412"},
+{sub:"Life Skills",time:"12:05",room:"NYB 005"}
 ],
 Wednesday:[
-{sub:"DBMS",time:"11:20"},
-{sub:"COD",time:"12:05"}
+{sub:"DBMS",time:"11:20",room:"NYB 312"},
+{sub:"COD",time:"12:05",room:"NYB 312"}
 ],
 Thursday:[
-{sub:"ANN",time:"8:00"},
-{sub:"COD",time:"11:20"},
-{sub:"Java",time:"12:05"}
+{sub:"ANN",time:"8:00",room:"KAB 306"},
+{sub:"COD",time:"11:20",room:"NYB 312"},
+{sub:"Java",time:"12:05",room:"VIB 016"}
 ],
 Friday:[
-{sub:"COD",time:"9:40"},
-{sub:"ANN Lab",time:"11:20"}
+{sub:"COD",time:"9:40",room:"VIB 307"},
+{sub:"ANN Lab",time:"11:20",room:"VIB 412"}
 ],
 Saturday:[
-{sub:"Java",time:"10:00"},
-{sub:"DBMS",time:"11:00"}
+{sub:"Java",time:"10:00",room:"VIB 103"},
+{sub:"DBMS",time:"11:00",room:"NYB 001"}
 ]
 };
 
-/* BUTTONS */
+/* 🔘 BUTTONS */
 window.switchUser=function(){
   currentUser=currentUser==="kartik"?"tara":"kartik";
   document.getElementById("name").innerText=currentUser==="kartik"?"Kartik":"Tara";
@@ -162,7 +162,7 @@ window.mark=async function(sub,type){
   render();
 }
 
-/* NEXT CLASS */
+/* ⏭️ NEXT CLASS */
 function getNextClass(){
   let now=new Date();
   let h=now.getHours()+now.getMinutes()/60;
@@ -172,12 +172,12 @@ function getNextClass(){
 
   for(let c of list){
     let t=parseFloat(c.time);
-    if(t>h) return "⏭️ "+c.sub;
+    if(t>h) return `⏭️ ${c.sub} (${c.room})`;
   }
   return "🎉 No more classes";
 }
 
-/* CALCULATIONS */
+/* 📊 CALCULATIONS */
 function overall(){
   let u=data[currentUser];
   let p=0,t=0;
@@ -195,7 +195,7 @@ function need75(p,t){
   return x>0?x:0;
 }
 
-/* RENDER */
+/* 🎨 RENDER */
 function render(){
 
 if(!data) return;
@@ -206,14 +206,16 @@ document.getElementById("nextClass").innerText=getNextClass();
 let c=document.getElementById("content");
 c.innerHTML="";
 
-/* 🔥 TIMETABLE MODE */
+/* 📅 TIMETABLE MODE */
 if(timetableMode){
   Object.keys(timetable).forEach(day=>{
     c.innerHTML+=`<h3>${day}</h3>`;
     timetable[day].forEach(i=>{
       c.innerHTML+=`
       <div class="card">
-      <b>${i.sub}</b><br>${i.time}
+      <b>${i.sub}</b><br>
+      ${i.time}<br>
+      📍 ${i.room}
       </div>`;
     });
   });
@@ -240,6 +242,7 @@ show.forEach(day=>{
     <div class="card">
     <b>${i.sub}</b><br>
     ${i.time}<br>
+    📍 ${i.room}<br>
     ${per}% (${d.p}/${d.t})<br>
 
     <div class="bar" style="background:${color};width:${per}%"></div>
@@ -256,7 +259,7 @@ show.forEach(day=>{
 
 }
 
-/* LOAD */
+/* 🔄 LOAD DATA */
 async function load(){
   let snap=await getDoc(doc(db,"attendance","shared"));
   if(snap.exists()){
