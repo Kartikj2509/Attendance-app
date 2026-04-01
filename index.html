@@ -171,12 +171,19 @@ window.mark=async function(sub,type){
   render();
 }
 
-window.undo=async function(sub){
-  let d=data[currentUser][sub];
+window.undo = async function(sub){
+  let d = data[currentUser][sub];
   if(!d) return;
 
-  if(d.t>0) d.t--;
-  if(d.p>d.t) d.p=d.t;
+  let last = lastAction[sub];
+
+  if(last === "present"){
+    if(d.p > 0) d.p--;
+    if(d.t > 0) d.t--;
+  }
+  else if(last === "bunk"){
+    if(d.t > 0) d.t--;
+  }
 
   delete lastAction[sub];
 
