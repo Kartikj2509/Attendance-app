@@ -52,7 +52,7 @@ button{
   border-radius:12px;
 }
 
-/* BLUR STATES */
+/* blur */
 .done-present{
   background: rgba(46,204,113,0.25);
   backdrop-filter: blur(6px);
@@ -103,10 +103,7 @@ let currentUser="kartik";
 let data=null;
 let timetableMode=false;
 
-/* UI STATE */
-let lastAction={};
-
-/* TIMETABLE */
+/* timetable */
 const timetable={
 Monday:[
 {sub:"DBMS",time:"8:00",room:"VIB 502"},
@@ -140,8 +137,7 @@ Saturday:[
 ]
 };
 
-
-/* BUTTONS */
+/* buttons */
 window.switchUser=function(){
   currentUser=currentUser==="kartik"?"tara":"kartik";
   document.getElementById("name").innerText=currentUser==="kartik"?"Kartik":"Tara";
@@ -158,40 +154,41 @@ window.toggleTT=function(){
   render();
 }
 
-/* ACTIONS */
+/* mark */
 window.mark=async function(sub,type){
-  let d=data[currentUser][sub]||{p:0,t:0};
+  let d=data[currentUser][sub]||{p:0,t:0,history:[]};
+
   d.t++;
   if(type==="present") d.p++;
 
+  if(!d.history) d.history=[];
+  d.history.push(type);
+
   data[currentUser][sub]=d;
-  lastAction[sub]=type;
 
   await setDoc(doc(db,"attendance","shared"),data);
   render();
 }
 
-window.undo = async function(sub){
-  let d = data[currentUser][sub];
-  if(!d) return;
+/* undo */
+window.undo=async function(sub){
+  let d=data[currentUser][sub];
+  if(!d || !d.history || d.history.length===0) return;
 
-  let last = lastAction[sub];
+  let last=d.history.pop();
 
-  if(last === "present"){
-    if(d.p > 0) d.p--;
-    if(d.t > 0) d.t--;
+  if(last==="present"){
+    d.p--;
+    d.t--;
+  }else{
+    d.t--;
   }
-  else if(last === "bunk"){
-    if(d.t > 0) d.t--;
-  }
-
-  delete lastAction[sub];
 
   await setDoc(doc(db,"attendance","shared"),data);
   render();
 }
 
-/* CALCULATIONS */
+/* calc */
 function overall(){
   let u=data[currentUser];
   let p=0,t=0;
@@ -209,7 +206,7 @@ function need75(p,t){
   return x>0?x:0;
 }
 
-/* RENDER */
+/* render */
 function render(){
 
 if(!data) return;
@@ -219,23 +216,23 @@ document.getElementById("overall").innerText="📊 "+overall()+"%";
 let c=document.getElementById("content");
 c.innerHTML="";
 
-/* TIMETABLE MODE */
+/* timetable */
 if(timetableMode){
   Object.keys(timetable).forEach(day=>{
     c.innerHTML+=`<h3>${day}</h3>`;
     timetable[day].forEach(i=>{
       c.innerHTML+=`
       <div class="card">
-      ${i.sub}<br>
-⏰ ${i.time}<br>
-📍 ${i.room}
+      <b>${i.sub}</b><br>
+      ⏰ ${i.time}<br>
+      📍 ${i.room}
       </div>`;
     });
   });
   return;
 }
 
-/* TRACKER (NO DAYS) */
+/* tracker */
 let subjects={};
 
 Object.keys(timetable).forEach(day=>{
@@ -245,12 +242,14 @@ Object.keys(timetable).forEach(day=>{
 });
 
 Object.values(subjects).forEach(i=>{
-  let d=data[currentUser][i.sub]||{p:0,t:0};
+  let d=data[currentUser][i.sub]||{p:0,t:0,history:[]};
   let per=d.t?((d.p/d.t)*100).toFixed(1):0;
 
   let cls="card";
-  if(lastAction[i.sub]==="present") cls+=" done-present";
-  if(lastAction[i.sub]==="bunk") cls+=" done-bunk";
+  let last=d.history?.[d.history.length-1];
+
+  if(last==="present") cls+=" done-present";
+  if(last==="bunk") cls+=" done-bunk";
 
   c.innerHTML+=`
   <div class="${cls}">
@@ -271,7 +270,7 @@ Object.values(subjects).forEach(i=>{
 
 }
 
-/* LOAD */
+/* load */
 async function load(){
   let snap=await getDoc(doc(db,"attendance","shared"));
   if(snap.exists()){
