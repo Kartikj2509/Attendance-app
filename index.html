@@ -119,7 +119,6 @@ t+=s.t;
 });
 
 if(t===0) return 0;
-
 return ((p/t)*100).toFixed(2);
 }
 
@@ -134,7 +133,6 @@ if(type==="present") d.p++;
 await setDoc(doc(db,"attendance","shared"),data);
 render();
 }
- window.mark = mark;
 
 function render(){
 
@@ -164,6 +162,8 @@ let today=days[new Date().getDay()];
 let show=mode==="today"?[today]:Object.keys(timetable);
 
 show.forEach(day=>{
+if(!timetable[day]) return;
+
 c.innerHTML+=`<h3>${day}</h3>`;
 timetable[day].forEach(i=>{
 let d=data[currentUser][i.sub];
@@ -184,61 +184,30 @@ ${per}% (${d.p}/${d.t})<br>
 
 }
 
-// 🔥 AUTO INIT DATA (runs once)
-async function initData(){
-await setDoc(doc(db,"attendance","shared"),{
-kartik:{
-COD:{p:18,t:22},
-DBMS:{p:24,t:28},
-"DBMS Lab":{p:7,t:8},
-Java:{p:21,t:23},
-"Java Lab":{p:8,t:8},
-ANN:{p:17,t:22},
-"ANN Lab":{p:5,t:6},
-"Life Skills":{p:15,t:16}
-},
-tara:{
-COD:{p:17,t:20},
-DBMS:{p:25,t:27},
-"DBMS Lab":{p:6,t:7},
-Java:{p:19,t:21},
-"Java Lab":{p:8,t:8},
-ANN:{p:19,t:22},
-"ANN Lab":{p:6,t:6},
-"Life Skills":{p:14,t:15}
-}
-});
-console.log("🔥 Data forced");
-}
-
-// load data
 async function loadData(){
-  try{
-    const ref = doc(db,"attendance","shared");
-    const snap = await getDoc(ref);
-
-    if(snap.exists()){
-      data = snap.data();
-      console.log("DATA:", data); // debug
-    } else {
-      console.log("No data found ❌");
-    }
-
-    if(!data || !data.kartik){
-      document.getElementById("content").innerHTML="❌ No data loaded";
-      return;
-    }
-
-    render();
-
-  } catch(e){
-    console.error("Firebase error:", e);
-    document.getElementById("content").innerHTML="❌ Firebase error";
-  }
+try{
+const snap=await getDoc(doc(db,"attendance","shared"));
+if(snap.exists()){
+data=snap.data();
+}else{
+document.getElementById("content").innerHTML="❌ No data";
+return;
 }
-initData().then(() => {
-  loadData();
-});
+render();
+}catch(e){
+console.error(e);
+document.getElementById("content").innerHTML="❌ Error";
+}
+}
+
+// 🔥 MAKE FUNCTIONS GLOBAL (CRITICAL FIX)
+window.mark = mark;
+window.switchUser = switchUser;
+window.toggleMode = toggleMode;
+window.toggleTT = toggleTT;
+
+// 🔥 LOAD ONLY (NO RESET)
+loadData();
 </script>
 </body>
 </html>
