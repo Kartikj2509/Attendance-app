@@ -227,18 +227,25 @@ document.getElementById("overall").innerText="📊 "+overall()+"%";
 
 let c=document.getElementById("content");
 c.innerHTML+=`
-  <div class="${cls}">
+<div class="${cls}">
   <b>${i.sub}</b><br>
   📍 ${i.room}<br>
 
   ${per}% (${d.p}/${d.t})<br>
 
   <div class="bar-container">
-    <div class="bar" style="
-      width:${per}%;
-      background:${per<75?'#e74c3c':per<85?'#f39c12':'#2ecc71'};
-    "></div>
+    <div class="bar" style="width:${per}%; background:${per<75?'#e74c3c':per<85?'#f39c12':'#2ecc71'};"></div>
   </div>
+
+  <div>😎 Can bunk: ${calcBunk(d.p,d.t)}</div>
+  <div>📈 Need for 75%: ${need75(d.p,d.t)}</div>
+
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <button class="present" onclick="mark('${i.sub}','present')">➕</button>
+    <button class="bunk" onclick="mark('${i.sub}','bunk')">❌</button>
+    <button style="background:#555;" onclick="undo('${i.sub}')">➖</button>
+  </div>
+</div>`;
 
 /* timetable */
 if(timetableMode){
