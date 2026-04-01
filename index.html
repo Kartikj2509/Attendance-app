@@ -31,12 +31,12 @@ body{
 
 button{
   margin:5px;
-  padding:12px 14px;
+  padding:10px;
   border:none;
-  border-radius:12px;
+  border-radius:10px;
   cursor:pointer;
   font-weight:600;
-  min-width:90px;
+  flex:1;
 }
 
 .present{background:#2ecc71;}
@@ -52,26 +52,18 @@ button{
   border-radius:12px;
 }
 
-/* 🔥 BLUR STATES */
+/* BLUR STATES */
 .done-present{
   background: rgba(46,204,113,0.25);
   backdrop-filter: blur(6px);
 }
-
 .done-bunk{
   background: rgba(231,76,60,0.25);
   backdrop-filter: blur(6px);
 }
 
-.bar{
-  height:6px;
-  border-radius:5px;
-  margin:5px 0;
-}
-
 @media(max-width:600px){
   .container{padding:15px;}
-  button{width:100%;}
 }
 </style>
 </head>
@@ -84,7 +76,6 @@ button{
 <div class="top">
 <h2 id="name">Kartik</h2>
 <h3 id="overall"></h3>
-<h4 id="nextClass"></h4>
 
 <button class="switch" onclick="switchUser()">Switch ❤️</button>
 <button class="track" onclick="toggleMode()">Tracker 📊</button>
@@ -110,43 +101,42 @@ const db=getFirestore(app);
 
 let currentUser="kartik";
 let data=null;
-let mode="all";
 let timetableMode=false;
 
-/* 🔥 TRACK UI STATE */
+/* UI STATE */
 let lastAction={};
 
 /* TIMETABLE */
 const timetable={
 Monday:[
-{sub:"DBMS",time:"8:00",room:"VIB 502"},
-{sub:"Java",time:"8:50",room:"VIB 502"},
-{sub:"ANN",time:"10:30",room:"VIB 207"},
-{sub:"DBMS Lab",time:"11:20",room:"VIB 411"}
+{sub:"DBMS",room:"VIB 502"},
+{sub:"Java",room:"VIB 502"},
+{sub:"ANN",room:"VIB 207"},
+{sub:"DBMS Lab",room:"VIB 411"}
 ],
 Tuesday:[
-{sub:"Java Lab",time:"9:40",room:"VIB 412"},
-{sub:"Life Skills",time:"12:05",room:"NYB 005"}
+{sub:"Java Lab",room:"VIB 412"},
+{sub:"Life Skills",room:"NYB 005"}
 ],
 Wednesday:[
-{sub:"DBMS",time:"11:20",room:"NYB 312"},
-{sub:"COD",time:"12:05",room:"NYB 312"}
+{sub:"DBMS",room:"NYB 312"},
+{sub:"COD",room:"NYB 312"}
 ],
 Thursday:[
-{sub:"ANN",time:"8:00",room:"KAB 306"},
-{sub:"COD",time:"11:20",room:"NYB 312"},
-{sub:"Java",time:"12:05",room:"VIB 016"}
+{sub:"ANN",room:"KAB 306"},
+{sub:"COD",room:"NYB 312"},
+{sub:"Java",room:"VIB 016"}
 ],
 Friday:[
-{sub:"COD",time:"8:00",room:"VIB 307"},
-{sub:"Life Skills",time:"8:50",room:"VIB 013"},
-{sub:"DBMS",time:"9:40",room:"NYB 312"},
-{sub:"ANN",time:"11:20",room:"NYB 312"},
-{sub:"Java",time:"12:05",room:"VIB 103"}
+{sub:"COD",room:"VIB 307"},
+{sub:"Life Skills",room:"VIB 013"},
+{sub:"DBMS",room:"NYB 312"},
+{sub:"ANN",room:"NYB 312"},
+{sub:"Java",room:"VIB 103"}
 ],
 Saturday:[
-{sub:"ANN Lab",time:"8:00",room:"VIB 412"},
-{sub:"DBMS",time:"9:40",room:"NYB 001"}
+{sub:"ANN Lab",room:"VIB 412"},
+{sub:"DBMS",room:"NYB 001"}
 ]
 };
 
@@ -158,21 +148,18 @@ window.switchUser=function(){
 }
 
 window.toggleMode=function(){
-  mode=mode==="today"?"all":"today";
+  timetableMode=false;
   render();
 }
 
 window.toggleTT=function(){
   timetableMode=!timetableMode;
-  document.querySelector(".tt").innerText=
-    timetableMode ? "Back 📊" : "Timetable 📅";
   render();
 }
 
-/* 🔥 MARK */
+/* ACTIONS */
 window.mark=async function(sub,type){
   let d=data[currentUser][sub]||{p:0,t:0};
-
   d.t++;
   if(type==="present") d.p++;
 
@@ -183,7 +170,6 @@ window.mark=async function(sub,type){
   render();
 }
 
-/* 🔥 UNDO */
 window.undo=async function(sub){
   let d=data[currentUser][sub];
   if(!d) return;
@@ -233,7 +219,6 @@ if(timetableMode){
       c.innerHTML+=`
       <div class="card">
       <b>${i.sub}</b><br>
-      ${i.time}<br>
       📍 ${i.room}
       </div>`;
     });
@@ -241,35 +226,38 @@ if(timetableMode){
   return;
 }
 
-/* NORMAL MODE */
+/* TRACKER (NO DAYS) */
+let subjects={};
+
 Object.keys(timetable).forEach(day=>{
-  c.innerHTML+=`<h3>${day}</h3>`;
-
   timetable[day].forEach(i=>{
-    let d=data[currentUser][i.sub]||{p:0,t:0};
-    let per=d.t?((d.p/d.t)*100).toFixed(1):0;
-
-    let cls="card";
-    if(lastAction[i.sub]==="present") cls+=" done-present";
-    if(lastAction[i.sub]==="bunk") cls+=" done-bunk";
-
-    c.innerHTML+=`
-    <div class="${cls}">
-    <b>${i.sub}</b><br>
-    ${i.time}<br>
-    📍 ${i.room}<br>
-    ${per}% (${d.p}/${d.t})<br>
-
-    <div>😎 Can bunk: ${calcBunk(d.p,d.t)}</div>
-    <div>📈 Need for 75%: ${need75(d.p,d.t)}</div>
-
-    <div style="display:flex; gap:10px;">
-      <button class="present" onclick="mark('${i.sub}','present')">➕ Present</button>
-      <button class="bunk" onclick="mark('${i.sub}','bunk')">❌ Bunk</button>
-      <button style="background:#555;" onclick="undo('${i.sub}')">➖ Undo</button>
-    </div>
-    </div>`;
+    subjects[i.sub]=i;
   });
+});
+
+Object.values(subjects).forEach(i=>{
+  let d=data[currentUser][i.sub]||{p:0,t:0};
+  let per=d.t?((d.p/d.t)*100).toFixed(1):0;
+
+  let cls="card";
+  if(lastAction[i.sub]==="present") cls+=" done-present";
+  if(lastAction[i.sub]==="bunk") cls+=" done-bunk";
+
+  c.innerHTML+=`
+  <div class="${cls}">
+  <b>${i.sub}</b><br>
+  📍 ${i.room}<br>
+  ${per}% (${d.p}/${d.t})<br>
+
+  <div>😎 Can bunk: ${calcBunk(d.p,d.t)}</div>
+  <div>📈 Need for 75%: ${need75(d.p,d.t)}</div>
+
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <button class="present" onclick="mark('${i.sub}','present')">➕</button>
+    <button class="bunk" onclick="mark('${i.sub}','bunk')">❌</button>
+    <button style="background:#555;" onclick="undo('${i.sub}')">➖</button>
+  </div>
+  </div>`;
 });
 
 }
