@@ -61,6 +61,18 @@ button{
   background: rgba(231,76,60,0.25);
   backdrop-filter: blur(6px);
 }
+.bar-container{
+  width:100%;
+  height:8px;
+  background:rgba(255,255,255,0.1);
+  border-radius:6px;
+  margin:6px 0;
+}
+
+.bar{
+  height:100%;
+  border-radius:6px;
+}
 
 @media(max-width:600px){
   .container{padding:15px;}
@@ -214,7 +226,19 @@ if(!data) return;
 document.getElementById("overall").innerText="📊 "+overall()+"%";
 
 let c=document.getElementById("content");
-c.innerHTML="";
+c.innerHTML+=`
+  <div class="${cls}">
+  <b>${i.sub}</b><br>
+  📍 ${i.room}<br>
+
+  ${per}% (${d.p}/${d.t})<br>
+
+  <div class="bar-container">
+    <div class="bar" style="
+      width:${per}%;
+      background:${per<75?'#e74c3c':per<85?'#f39c12':'#2ecc71'};
+    "></div>
+  </div>
 
 /* timetable */
 if(timetableMode){
