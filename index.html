@@ -110,7 +110,16 @@ render();
 function overall(){
 let u=data[currentUser];
 let p=0,t=0;
-Object.values(u).forEach(s=>{p+=s.p;t+=s.t;});
+
+Object.values(u).forEach(s=>{
+if(s && s.p && s.t){
+p+=s.p;
+t+=s.t;
+}
+});
+
+if(t===0) return 0;
+
 return ((p/t)*100).toFixed(2);
 }
 
@@ -176,11 +185,7 @@ ${per}% (${d.p}/${d.t})<br>
 
 // 🔥 AUTO INIT DATA (runs once)
 async function initData(){
-const ref=doc(db,"attendance","shared");
-const snap=await getDoc(ref);
-
-if(!snap.exists()){
-await setDoc(ref,{
+await setDoc(doc(db,"attendance","shared"),{
 kartik:{
 COD:{p:18,t:22},
 DBMS:{p:24,t:28},
@@ -202,7 +207,7 @@ ANN:{p:19,t:22},
 "Life Skills":{p:14,t:15}
 }
 });
-}
+console.log("🔥 Data forced");
 }
 
 // load data
