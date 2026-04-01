@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Kartik ❤️ Tara Ultimate</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    font-family: 'Segoe UI';
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+    text-align: center;
+}
+.container {
+    background: #1e293b;
+    padding: 20px;
+    margin: 20px auto;
+    width: 400px;
+    border-radius: 15px;
+}
+button {
+    padding: 8px;
+    margin: 5px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+.toggle { background: #3b82f6; }
+.mode { background: #9333ea; }
+.timetableBtn { background: #f59e0b; }
+.present { background: #22c55e; }
+.bunk { background: #ef4444; }
+.card {
+    background: #334155;
+    margin: 10px;
+    padding: 12px;
+    border-radius: 10px;
+}
+.big { font-size:18px; margin:8px; }
+.highlight { color:#22c55e; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2 id="userTitle">👤 Kartik</h2>
+
+    <div class="big" id="overall"></div>
+    <div class="big highlight" id="nextClass"></div>
+
+    <button class="toggle" onclick="switchUser()">Switch ❤️</button>
+    <button class="mode" onclick="toggleMode()">Tracker 🔁</button>
+    <button class="timetableBtn" onclick="showTimetable()">Timetable 🏫</button>
+
+    <h3 id="heading"></h3>
+    <div id="content"></div>
+
+    <canvas id="chart"></canvas>
+</div>
+
+<script type="module">
+
+// ===== FIREBASE =====
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyA3R5plHfBl1VU2MOenTYIZJEKRQ0iIcZQ",
+    authDomain: "attendance-ea8db.firebaseapp.com",
+    projectId: "attendance-ea8db",
+    storageBucket: "attendance-ea8db.firebasestorage.app",
+    messagingSenderId: "892923950327",
+    appId: "1:892923950327:web:4b432caad184d0b5280ff2",
+    measurementId: "G-DG8E73CTRP"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ===== GLOBAL =====
+let currentUser="kartik";
+let mode="today";
+let timetableMode=false;
+let data={};
+
+// ===== TIMETABLE =====
+let timetable={
+Monday:[
+{sub:"DBMS",time:"8:00-8:50",room:"VIB 502"},
+{sub:"Java",time:"8:50-9:40",room:"VIB 502"},
+{sub:"ANN",time:"10:30-11:20",room:"VIB 207"},
+{sub:"DBMS Lab",time:"11:20-12:50",room:"VIB 411"}
+],
+Tuesday:[
+{sub:"Java Lab",time:"9:40-11:20",room:"VIB 412"},
+{sub:"Life Skills",time:"12:05-12:50",room:"NYB 005"}
+],
+Wednesday:[
+{sub:"DBMS",time:"11:20-12:05",room:"NYB 312"},
+{sub:"COD",time:"12:05-12:50",room:"NYB 312"}
+],
+Thursday:[
+{sub:"ANN",time:"8:00-8:50",room:"KAB 306"},
+{sub:"COD",time:"11:20-12:05",room:"NYB 312"},
+{sub:"Java",time:"12:05-12:50",room:"VIB 016"}
+],
+Friday:[
+{sub:"COD",time:"8:00-8:50",room:"VIB 307"},
+{sub:"Life Skills",time:"8:50-9:40",room:"VIB 013"},
+{sub:"DBMS",time:"9:40-10:30",room:"NYB 312"},
+{sub:"ANN",time:"11:20-12:05",room:"NYB 312"},
+{sub:"Java",time:"12:05-12:50",room:"VIB 103"}
+],
+Saturday:[
+{sub:"ANN Lab",time:"8:50-10:30",room:"VIB 412"},
+{sub:"DBMS",time:"10:30-11:20",room:"NYB 001"}
+]
+};
+
+// ===== LOAD =====
+async function loadData(){
+  const ref=doc(db,"attendance","shared");
+  const snap=await getDoc(ref);
+
+  if(snap.exists()){
+    data=snap.data();
+  } else {
+    data={
+      kartik:{
+        COD:{p:18,t:22},DBMS:{p:24,t:28},"DBMS Lab":{p:7,t:8},
+        Java:{p:21,t:23},"Java Lab":{p:8,t:8},
+        ANN:{p:17,t:22},"ANN Lab":{p:5,t:6},
+        "Life Skills":{p:15,t:16}
+      },
+      tara:{
+        COD:{p:17,t:20},DBMS:{p:25,t:27},"DBMS Lab":{p:6,t:7},
+        Java:{p:19,t:21},"Java Lab":{p:8,t:8},
+        ANN:{p:19,t:22},"ANN Lab":{p:6,t:6},
+        "Life Skills":{p:14,t:15}
+      }
+    };
+    await setDoc(ref,data);
+  }
+
+  render();
+}
+
+// ===== SAVE =====
+async function saveData(){
+  await setDoc(doc(db,"attendance","shared"),data);
+}
+
+// ===== MARK =====
+async function mark(sub,type){
+  if(type==="present"){
+    data[currentUser][sub].p++;
+    data[currentUser][sub].t++;
+  } else data[currentUser][sub].t++;
+
+  await saveData();
+  render();
+}
+
+// ===== NEXT CLASS =====
+function getMinutes(t){
+  let [h,m]=t.split(":").map(Number);
+  return h*60+m;
+}
+
+function getNextClass(){
+  let now=new Date();
+  let mins=now.getHours()*60+now.getMinutes();
+  let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  let today=days[now.getDay()];
+  let list=timetable[today]||[];
+
+  for(let c of list){
+    let [s,e]=c.time.split("-");
+    let start=getMinutes(s);
+    let end=getMinutes(e);
+
+    if(mins>=start && mins<=end) return "🟢 "+c.sub+" ("+c.room+")";
+    if(mins<start) return "⏭️ "+c.sub+" ("+c.room+")";
+  }
+
+  return "🎉 No more classes";
+}
+
+// ===== OVERALL =====
+function overall(){
+  let p=0,t=0;
+  Object.values(data[currentUser]).forEach(s=>{p+=s.p;t+=s.t});
+  return ((p/t)*100).toFixed(2);
+}
+
+// ===== UI =====
+function switchUser(){
+  currentUser=currentUser==="kartik"?"tara":"kartik";
+  document.getElementById("userTitle").innerText=currentUser==="kartik"?"👤 Kartik":"💖 Tara";
+  render();
+}
+
+function toggleMode(){
+  timetableMode=false;
+  mode=mode==="today"?"week":"today";
+  render();
+}
+
+function showTimetable(){
+  timetableMode=true;
+  render();
+}
+
+// ===== RENDER =====
+function render(){
+document.getElementById("overall").innerText="📊 "+overall()+"%";
+document.getElementById("nextClass").innerText=getNextClass();
+
+let c=document.getElementById("content");
+c.innerHTML="";
+
+let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+let today=days[new Date().getDay()];
+
+if(timetableMode){
+Object.keys(timetable).forEach(day=>{
+c.innerHTML+=`<h3>${day}</h3>`;
+timetable[day].forEach(i=>{
+c.innerHTML+=`<div class="card">${i.sub}<br>${i.time}<br>${i.room}</div>`;
+});
+});
+return;
+}
+
+let show=mode==="today"?[today]:Object.keys(timetable);
+
+show.forEach(day=>{
+c.innerHTML+=`<h3>${day}</h3>`;
+timetable[day].forEach(i=>{
+let d=data[currentUser][i.sub];
+let per=((d.p/d.t)*100).toFixed(2);
+
+c.innerHTML+=`
+<div class="card">
+<b>${i.sub}</b><br>
+${i.time}<br>
+${per}% (${d.p}/${d.t})<br>
+<button class="present" onclick="mark('${i.sub}','present')">Present</button>
+<button class="bunk" onclick="mark('${i.sub}','bunk')">Bunk</button>
+</div>`;
+});
+});
+
+}
+
+// ===== START =====
+loadData();
+
+window.mark=mark;
+window.switchUser=switchUser;
+
+</script>
+</body>
+</html>
