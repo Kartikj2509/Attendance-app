@@ -24,24 +24,31 @@ body{
 .container{
   width:100%;
   max-width:900px;
-  padding:20px;
+  padding:16px;
   border-radius:20px;
-  background:rgba(255,255,255,0.05);
-  backdrop-filter:blur(10px);
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(12px);
 }
 
 .top{text-align:center;}
 
 button{
-  margin:5px;
-  padding:10px;
+  margin:6px 0;
+  padding:12px;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   cursor:pointer;
   font-weight:600;
+  font-size:14px;
   flex:1;
+  min-width:80px;
 }
-
+.top-buttons{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
 .present{background:#2ecc71;}
 .bunk{background:#e74c3c;}
 .switch{background:#3498db;}
@@ -49,12 +56,12 @@ button{
 .tt{background:#f39c12;}
 
 .card{
-  background:rgba(255,255,255,0.1);
-  padding:12px;
-  margin:10px 0;
-  border-radius:12px;
+  background:rgba(255,255,255,0.08);
+  padding:14px;
+  margin:12px 0;
+  border-radius:16px;
+  line-height:1.5;
 }
-
 /* blur */
 .done-present{
   background: rgba(46,204,113,0.25);
@@ -64,9 +71,32 @@ button{
   background: rgba(231,76,60,0.25);
   backdrop-filter: blur(6px);
 }
-
+.card b{
+  font-size:16px;
+}
 @media(max-width:600px){
-  .container{padding:15px;}
+
+  body{
+    font-size:14px;
+  }
+
+  h2{
+    font-size:20px;
+  }
+
+  h3{
+    font-size:16px;
+  }
+
+  .container{
+    padding:12px;
+  }
+
+  button{
+    font-size:13px;
+    padding:10px;
+  }
+
 }
 </style>
 </head>
@@ -80,9 +110,11 @@ button{
 <h2 id="name">Kartik</h2>
 <h3 id="overall"></h3>
 
+<div class="top-buttons">
 <button class="switch" onclick="switchUser()">Switch 🚶</button>
 <button class="track" onclick="toggleMode()">Tracker 📊</button>
 <button class="tt" onclick="toggleTT()">Timetable 📅</button>
+</div>
 </div>
 
 <div id="content">Loading...</div>
@@ -263,7 +295,7 @@ Object.values(subjects).forEach(i=>{
   <div>😎 Can bunk: ${calcBunk(d.p,d.t)}</div>
   <div>📈 Need for 75%: ${need75(d.p,d.t)}</div>
 
-  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+<div style="display:flex; gap:10px; margin-top:8px;">
     <button class="present" onclick="mark('${i.sub}','present')">➕</button>
     <button class="bunk" onclick="mark('${i.sub}','bunk')">❌</button>
     <button style="background:#555;" onclick="undo('${i.sub}')">➖</button>
