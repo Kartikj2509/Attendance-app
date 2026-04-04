@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Attendance Tracker</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#F4ECE1">
   <link rel="apple-touch-icon" sizes="180x180" href="icon2.png">
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,7 +20,7 @@
         extend: {
           fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
           colors: {
-            glass: 'rgba(255, 255, 255, 0.05)',
+            beige: { 50: '#FFFCF5', 100: '#F4ECE1', 200: '#E8D8C8', 300: '#D5C0A9' }
           },
           animation: {
             'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
@@ -43,49 +43,53 @@
 
   <style>
     body {
-      background: linear-gradient(135deg, #020617, #0f172a, #1e1b4b);
-      color: white;
+      background: linear-gradient(135deg, #FFFCF5, #F4ECE1, #E8D8C8);
+      color: #292524; 
       -webkit-tap-highlight-color: transparent;
     }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
     
     .glass-card {
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 8px 32px rgba(120, 113, 108, 0.08); 
     }
     .btn-active:active { transform: scale(0.95); }
     
-    /* Toggles */
-    .toggle-checkbox:checked { right: 0; border-color: #34d399; }
-    .toggle-checkbox:checked + .toggle-label { background-color: #34d399; }
+    .toggle-checkbox:checked { right: 0; border-color: #d97706; }
+    .toggle-checkbox:checked + .toggle-label { background-color: #d97706; }
     
-    /* Status Colors */
-    .status-present { background: linear-gradient(145deg, rgba(16, 185, 129, 0.1), rgba(255,255,255,0.02)); border-color: rgba(16, 185, 129, 0.2); }
-    .status-bunk { background: linear-gradient(145deg, rgba(244, 63, 94, 0.1), rgba(255,255,255,0.02)); border-color: rgba(244, 63, 94, 0.2); }
-    .status-cancelled { background: linear-gradient(145deg, rgba(148, 163, 184, 0.1), rgba(255,255,255,0.02)); border-color: rgba(148, 163, 184, 0.2); }
+    .status-present { background: linear-gradient(145deg, rgba(16, 185, 129, 0.05), rgba(255,255,255,0.8)); border-color: rgba(16, 185, 129, 0.2); }
+    .status-bunk { background: linear-gradient(145deg, rgba(244, 63, 94, 0.05), rgba(255,255,255,0.8)); border-color: rgba(244, 63, 94, 0.2); }
+    .status-cancelled { background: linear-gradient(145deg, rgba(168, 162, 158, 0.1), rgba(255,255,255,0.8)); border-color: rgba(168, 162, 158, 0.3); }
   </style>
 </head>
 
-<body class="flex justify-center h-screen overflow-hidden selection:bg-indigo-500/30 antialiased relative">
+<body class="flex justify-center h-screen overflow-hidden selection:bg-amber-500/30 antialiased relative">
 
-  <div class="w-full max-w-md h-full flex flex-col relative bg-slate-950/50 shadow-2xl ring-1 ring-white/5">
+  <div class="w-full max-w-md h-full flex flex-col relative bg-beige-50/50 shadow-2xl ring-1 ring-beige-200">
     
     <header class="pt-10 pb-4 px-6 glass-card rounded-b-3xl z-20 sticky top-0 flex justify-between items-center">
       <div>
-        <p class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">Dashboard</p>
-        <button onclick="switchUser()" class="btn-active group flex items-center gap-2 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">
+        <div class="flex items-center gap-2 mb-1">
+          <p class="text-stone-500 text-xs font-bold uppercase tracking-wider">Dashboard</p>
+          <div id="streak-badge" class="hidden items-center gap-1 bg-orange-100/80 border border-orange-200 text-orange-600 px-2 py-0.5 rounded-full text-[10px] font-black shadow-sm">
+            <i class="fa-solid fa-fire"></i> <span id="streak-count">0</span>
+          </div>
+        </div>
+        <button onclick="switchUser()" class="btn-active group flex items-center gap-2 text-2xl font-black text-stone-800">
           <span id="name">Kartik</span>
-          <i class="fa-solid fa-arrows-rotate text-sm text-indigo-400 group-hover:rotate-180 transition-transform duration-500"></i>
+          <i class="fa-solid fa-arrows-rotate text-sm text-amber-600 group-hover:rotate-180 transition-transform duration-500"></i>
         </button>
       </div>
       <div class="text-right flex items-center gap-3">
         <div>
-          <p class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Overall</p>
-          <div id="overall" class="text-xl font-bold text-emerald-400">--%</div>
+          <p class="text-stone-500 text-xs font-semibold uppercase tracking-wider mb-1">Overall</p>
+          <div id="overall" class="text-xl font-bold text-emerald-600">--%</div>
         </div>
-        <button onclick="openSettings()" class="btn-active w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white">
+        <button onclick="openSettings()" class="btn-active w-10 h-10 rounded-full bg-white/80 border border-beige-300 shadow-sm flex items-center justify-center text-stone-500 hover:text-stone-800 transition-colors">
           <i class="fa-solid fa-gear"></i>
         </button>
       </div>
@@ -93,60 +97,94 @@
 
     <main id="content" class="flex-1 overflow-y-auto px-5 pt-6 pb-28 space-y-4 relative z-10 scroll-smooth">
       <div class="flex h-full items-center justify-center animate-pulse">
-        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-indigo-500"></i>
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-amber-500"></i>
       </div>
     </main>
 
     <nav class="absolute bottom-0 w-full px-4 pb-8 pt-4 glass-card rounded-t-3xl z-20 flex justify-between items-center">
-      <button onclick="switchTab('today')" id="tab-today" class="btn-active flex flex-col items-center gap-1 text-indigo-400 w-14">
-        <i class="fa-solid fa-bolt text-xl mb-1"></i><span class="text-[10px] font-bold">Today</span>
+      <button onclick="switchTab('today')" id="tab-today" class="btn-active flex flex-col items-center gap-1 text-amber-700 w-14 transition-colors">
+        <i class="fa-solid fa-bolt text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">Today</span>
       </button>
-      <button onclick="switchTab('tracker')" id="tab-tracker" class="btn-active flex flex-col items-center gap-1 text-slate-500 w-14">
-        <i class="fa-solid fa-chart-pie text-xl mb-1"></i><span class="text-[10px] font-bold">Tracker</span>
+      <button onclick="switchTab('tracker')" id="tab-tracker" class="btn-active flex flex-col items-center gap-1 text-stone-400 w-14 transition-colors">
+        <i class="fa-solid fa-chart-pie text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">Tracker</span>
       </button>
-      <button onclick="switchTab('history')" id="tab-history" class="btn-active flex flex-col items-center gap-1 text-slate-500 w-14">
-        <i class="fa-solid fa-clock-rotate-left text-xl mb-1"></i><span class="text-[10px] font-bold">History</span>
+      <button onclick="switchTab('history')" id="tab-history" class="btn-active flex flex-col items-center gap-1 text-stone-400 w-14 transition-colors">
+        <i class="fa-solid fa-clock-rotate-left text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">History</span>
       </button>
-      <button onclick="switchTab('timetable')" id="tab-timetable" class="btn-active flex flex-col items-center gap-1 text-slate-500 w-14">
-        <i class="fa-solid fa-calendar-days text-xl mb-1"></i><span class="text-[10px] font-bold">Schedule</span>
+      <button onclick="switchTab('timetable')" id="tab-timetable" class="btn-active flex flex-col items-center gap-1 text-stone-400 w-14 transition-colors">
+        <i class="fa-solid fa-calendar-days text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">Schedule</span>
       </button>
     </nav>
   </div>
 
-  <div id="settings-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 animate-fade-in">
-    <div class="glass-card w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-white/10">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-bold text-white">Settings</h3>
-        <button onclick="closeSettings()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+  <div id="settings-modal" class="fixed inset-0 z-50 hidden bg-stone-900/30 backdrop-blur-sm flex items-center justify-center px-4 animate-fade-in">
+    <div class="glass-card w-full max-w-sm max-h-[80vh] overflow-y-auto rounded-3xl p-6 shadow-2xl">
+      <div class="flex justify-between items-center mb-6 sticky top-0 bg-white/80 backdrop-blur pb-2 z-10 -mt-2 pt-2">
+        <h3 class="text-xl font-black text-stone-800">Settings</h3>
+        <button onclick="closeSettings()" class="text-stone-400 hover:text-stone-600"><i class="fa-solid fa-xmark text-xl"></i></button>
       </div>
 
-      <div class="mb-6 border-b border-white/10 pb-6">
-        <p class="text-sm text-slate-400 mb-4">Minimum required attendance:</p>
+      <div class="mb-6 border-b border-beige-300/50 pb-6">
+        <p class="text-sm text-stone-500 font-bold mb-4">Global Target Attendance:</p>
         <div class="flex items-center gap-4">
-          <input type="range" id="target-slider" min="50" max="100" class="w-full accent-indigo-500" oninput="document.getElementById('target-display').innerText = this.value + '%'">
-          <span id="target-display" class="text-xl font-bold text-indigo-400 w-16 text-right">75%</span>
+          <input type="range" id="target-slider" min="50" max="100" class="w-full accent-amber-600" oninput="document.getElementById('target-display').innerText = this.value + '%'">
+          <span id="target-display" class="text-xl font-bold text-amber-700 w-16 text-right">75%</span>
         </div>
       </div>
 
-      <div class="mb-6 flex justify-between items-center border-b border-white/10 pb-6">
+      <div class="mb-6 border-b border-beige-300/50 pb-6">
+        <p class="text-sm text-stone-500 font-bold mb-3">Subject-Specific Targets:</p>
+        <div id="subject-targets-container" class="space-y-3">
+          </div>
+      </div>
+
+      <div class="mb-6 flex justify-between items-center border-b border-beige-300/50 pb-6">
         <div>
-          <p class="text-white font-bold">Holiday Mode</p>
-          <p class="text-xs text-slate-400">Pauses today's schedule</p>
+          <p class="text-stone-800 font-bold">Holiday Mode</p>
+          <p class="text-xs text-stone-500 font-medium">Pauses today's schedule</p>
         </div>
         <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-            <input type="checkbox" name="toggle" id="holiday-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300"/>
-            <label for="holiday-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-600 cursor-pointer transition-all duration-300"></label>
+            <input type="checkbox" name="toggle" id="holiday-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-beige-300 appearance-none cursor-pointer transition-all duration-300"/>
+            <label for="holiday-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-beige-300 cursor-pointer transition-all duration-300"></label>
         </div>
       </div>
+
+      <button onclick="saveSettings()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors mt-2">
+        Save Changes
+      </button>
+    </div>
+  </div>
+
+  <div id="forecast-modal" class="fixed inset-0 z-50 hidden bg-stone-900/40 backdrop-blur-sm flex items-center justify-center px-4 animate-fade-in">
+    <div class="glass-card w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-indigo-200/50">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-black text-stone-800 flex items-center gap-2"><i class="fa-solid fa-crystal-ball text-indigo-500"></i> Forecaster</h3>
+        <button onclick="closeForecast()" class="text-stone-400 hover:text-stone-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
       
-      <div class="mb-6">
-        <button onclick="requestNotifications()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600/50 py-3 rounded-xl transition-all flex justify-center items-center gap-2">
-          <i class="fa-regular fa-bell"></i> Enable Class Reminders
-        </button>
+      <p id="fc-subject" class="text-sm font-bold text-indigo-600 uppercase tracking-widest mb-4">SUBJECT</p>
+      
+      <div class="bg-white/50 rounded-2xl p-4 border border-beige-200 mb-5">
+        <div class="flex justify-between items-end mb-2">
+          <p class="text-xs text-stone-500 font-bold uppercase">Projected</p>
+          <p id="fc-percent" class="text-2xl font-black text-stone-800">0%</p>
+        </div>
+        <div class="w-full bg-beige-200/80 rounded-full h-2 mb-2 overflow-hidden shadow-inner">
+          <div id="fc-bar" class="h-full rounded-full bg-indigo-500 transition-all" style="width: 0%"></div>
+        </div>
+        <p id="fc-fraction" class="text-right text-[10px] text-stone-400 font-bold uppercase tracking-wider">0 / 0 Classes</p>
       </div>
 
-      <button onclick="saveSettings()" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 rounded-xl transition-colors">
-        Save Changes
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <button onclick="simForecast('present')" class="btn-active bg-emerald-50 text-emerald-600 border border-emerald-200 py-3 rounded-xl font-bold text-sm shadow-sm flex items-center justify-center gap-2">
+          <i class="fa-solid fa-plus text-xs"></i> Simulate Present
+        </button>
+        <button onclick="simForecast('bunk')" class="btn-active bg-rose-50 text-rose-600 border border-rose-200 py-3 rounded-xl font-bold text-sm shadow-sm flex items-center justify-center gap-2">
+          <i class="fa-solid fa-plus text-xs"></i> Simulate Bunk
+        </button>
+      </div>
+      <button onclick="resetForecast()" class="w-full bg-white/80 text-stone-500 border border-beige-200 py-2 rounded-xl font-bold text-xs shadow-sm">
+        Reset Forecast
       </button>
     </div>
   </div>
@@ -168,6 +206,12 @@ let data = null;
 let currentTab = 'today'; 
 let myChart = null; 
 
+// Forecaster State variables
+let fcSub = "";
+let fcP = 0;
+let fcT = 0;
+let fcTarget = 75;
+
 const timetable = {
   Monday: [{sub: "DBMS", time: "8:00", room: "VIB 502"}, {sub: "Java", time: "8:50", room: "VIB 502"}, {sub: "ANN", time: "10:30", room: "VIB 207"}, {sub: "DBMS Lab", time: "11:20", room: "VIB 411"}],
   Tuesday: [{sub: "Java Lab", time: "9:40", room: "VIB 412"}, {sub: "Life Skills", time: "12:05", room: "NYB 005"}],
@@ -177,6 +221,9 @@ const timetable = {
   Saturday: [{sub: "ANN Lab", time: "8:00", room: "VIB 412"}, {sub: "DBMS", time: "9:40", room: "NYB 001"}],
   Sunday: []
 };
+
+// Extract unique subjects for settings
+const allSubjects = [...new Set(Object.values(timetable).flat().map(i => i.sub))];
 
 window.switchUser = function() {
   currentUser = currentUser === "kartik" ? "tara" : "kartik";
@@ -188,17 +235,34 @@ window.switchTab = function(tab) {
   currentTab = tab;
   ['today', 'tracker', 'history', 'timetable'].forEach(t => {
     const el = document.getElementById(`tab-${t}`);
-    if(t === tab) el.classList.replace('text-slate-500', 'text-indigo-400');
-    else el.classList.replace('text-indigo-400', 'text-slate-500');
+    if(t === tab) el.classList.replace('text-stone-400', 'text-amber-700');
+    else el.classList.replace('text-amber-700', 'text-stone-400');
   });
   render();
 }
 
-/* Settings Logic */
+/* Settings & Targets */
 window.openSettings = function() {
   document.getElementById('target-slider').value = data[currentUser].target || 75;
   document.getElementById('target-display').innerText = `${data[currentUser].target || 75}%`;
   document.getElementById('holiday-toggle').checked = data[currentUser].holidayMode || false;
+  
+  // Build subject inputs
+  let subHtml = "";
+  let targets = data[currentUser].targets || {};
+  allSubjects.forEach(sub => {
+    let val = targets[sub] || data[currentUser].target || 75;
+    subHtml += `
+      <div class="flex justify-between items-center bg-white/50 px-3 py-2 rounded-xl border border-beige-200">
+        <span class="text-xs font-bold text-stone-700">${sub}</span>
+        <div class="flex items-center gap-1">
+          <input type="number" id="target-${sub.replace(/\s+/g, '')}" value="${val}" min="0" max="100" class="w-12 text-center bg-transparent border-b border-stone-300 text-sm font-bold text-amber-700 focus:outline-none focus:border-amber-500">
+          <span class="text-xs text-stone-400">%</span>
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById('subject-targets-container').innerHTML = subHtml;
   document.getElementById('settings-modal').classList.remove('hidden');
 }
 
@@ -207,52 +271,66 @@ window.closeSettings = function() { document.getElementById('settings-modal').cl
 window.saveSettings = async function() {
   data[currentUser].target = parseInt(document.getElementById('target-slider').value);
   data[currentUser].holidayMode = document.getElementById('holiday-toggle').checked;
+  
+  if(!data[currentUser].targets) data[currentUser].targets = {};
+  allSubjects.forEach(sub => {
+    let inputVal = document.getElementById(`target-${sub.replace(/\s+/g, '')}`).value;
+    data[currentUser].targets[sub] = parseInt(inputVal) || data[currentUser].target;
+  });
+
   closeSettings();
   render();
   await setDoc(doc(db, "attendance", "shared"), data);
 }
 
-/* Notification Logic */
-window.requestNotifications = function() {
-  if (!("Notification" in window)) {
-    alert("This browser does not support desktop notification");
-  } else if (Notification.permission === "granted") {
-    new Notification("Reminders are already enabled!");
-  } else if (Notification.permission !== "denied") {
-    Notification.requestPermission().then(permission => {
-      if (permission === "granted") new Notification("Awesome! We'll remind you about classes.");
-    });
+/* Forecaster Logic */
+window.openForecast = function(sub) {
+  fcSub = sub;
+  let d = data[currentUser][sub] || {p: 0, t: 0};
+  fcP = d.p;
+  fcT = d.t;
+  fcTarget = data[currentUser].targets?.[sub] || data[currentUser].target || 75;
+  
+  document.getElementById('fc-subject').innerText = sub;
+  updateForecastUI();
+  document.getElementById('forecast-modal').classList.remove('hidden');
+}
+
+window.closeForecast = function() { document.getElementById('forecast-modal').classList.add('hidden'); }
+
+window.simForecast = function(type) {
+  fcT++;
+  if(type === 'present') fcP++;
+  updateForecastUI();
+}
+
+window.resetForecast = function() {
+  let d = data[currentUser][fcSub] || {p: 0, t: 0};
+  fcP = d.p; fcT = d.t;
+  updateForecastUI();
+}
+
+function updateForecastUI() {
+  let per = fcT === 0 ? 0 : ((fcP / fcT) * 100).toFixed(1);
+  let elPer = document.getElementById('fc-percent');
+  let elBar = document.getElementById('fc-bar');
+  
+  elPer.innerText = `${per}%`;
+  document.getElementById('fc-fraction').innerText = `${fcP} / ${fcT} Simulated`;
+  elBar.style.width = `${per}%`;
+  
+  if(parseFloat(per) < fcTarget) {
+    elPer.className = "text-3xl font-black text-rose-500";
+    elBar.className = "h-full rounded-full bg-rose-500 transition-all";
+  } else {
+    elPer.className = "text-3xl font-black text-emerald-500";
+    elBar.className = "h-full rounded-full bg-emerald-500 transition-all";
   }
 }
 
-// Background checker for classes (runs every minute while app is open)
-setInterval(() => {
-  if(Notification.permission !== "granted" || data[currentUser].holidayMode) return;
-  const now = new Date();
-  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-  const todayClasses = timetable[days[now.getDay()]];
-  
-  todayClasses.forEach(cls => {
-    let [hours, mins] = cls.time.split(':').map(Number);
-    let classTime = new Date();
-    classTime.setHours(hours, mins, 0);
-    
-    // Check if class is exactly 10 mins away
-    let diffMins = (classTime - now) / 1000 / 60;
-    if(diffMins > 9 && diffMins <= 10) {
-      new Notification(`Upcoming Class: ${cls.sub}`, {
-        body: `Starts in 10 mins at ${cls.room}`,
-        icon: '/icon2.png'
-      });
-    }
-  });
-}, 60000);
-
-/* Marking Logic (Updated for History Log) */
+/* Core Logic */
 window.mark = async function(sub, type) {
   let d = data[currentUser][sub] || {p: 0, t: 0, history: []};
-
-  // Build a timeline object. Fallback for old strings.
   let actionObj = { type: type, date: new Date().getTime() };
 
   if(type === "cancelled") {
@@ -275,7 +353,7 @@ window.undo = async function(sub) {
   if(!d || !d.history || d.history.length === 0) return;
 
   let last = d.history.pop();
-  let lastType = typeof last === 'string' ? last : last.type; // Backwards compatibility!
+  let lastType = typeof last === 'string' ? last : last.type; 
 
   if(lastType === "present") { d.p--; d.t--; }
   else if(lastType === "bunk") { d.t--; }
@@ -284,16 +362,31 @@ window.undo = async function(sub) {
   await setDoc(doc(db, "attendance", "shared"), data);
 }
 
-/* Math */
 function calculateStats(userObj) {
   let p = 0, t = 0;
+  let allHist = [];
+  
   Object.keys(userObj).forEach(k => {
-    if(k !== 'target' && k !== 'holidayMode') { p += userObj[k].p; t += userObj[k].t; }
+    if(k !== 'target' && k !== 'holidayMode' && k !== 'targets') { 
+      p += userObj[k].p; 
+      t += userObj[k].t; 
+      (userObj[k].history || []).forEach(h => {
+        allHist.push(typeof h === 'string' ? {type: h, date: 0} : h);
+      });
+    }
   });
-  return { p, t, percent: t === 0 ? "0.00" : ((p / t) * 100).toFixed(2) };
+
+  // Calculate Streak
+  allHist.sort((a,b) => b.date - a.date);
+  let streak = 0;
+  for(let item of allHist) {
+    if(item.type === 'present') streak++;
+    else if(item.type === 'bunk') break;
+  }
+
+  return { p, t, percent: t === 0 ? "0.00" : ((p / t) * 100).toFixed(2), streak };
 }
 
-/* Chart */
 function renderChart(stats) {
   const absent = stats.t - stats.p;
   if (myChart) myChart.destroy();
@@ -303,13 +396,12 @@ function renderChart(stats) {
     type: 'doughnut',
     data: {
       labels: ['Attended', 'Bunked'],
-      datasets: [{ data: [stats.p, absent], backgroundColor: ['#34d399', '#fb7185'], borderWidth: 0 }]
+      datasets: [{ data: [stats.p, absent], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }]
     },
     options: { cutout: '75%', plugins: { legend: { display: false } } }
   });
 }
 
-/* UI Rendering */
 function render() {
   if(!data) return;
   
@@ -317,19 +409,26 @@ function render() {
   const overallEl = document.getElementById("overall");
   overallEl.innerText = `${stats.percent}%`;
   
+  // Update Streak Badge
+  const streakBadge = document.getElementById("streak-badge");
+  if(stats.streak > 0) {
+    document.getElementById("streak-count").innerText = `${stats.streak} Streak`;
+    streakBadge.classList.replace("hidden", "flex");
+  } else {
+    streakBadge.classList.replace("flex", "hidden");
+  }
+  
   let c = document.getElementById("content");
   c.innerHTML = "";
   let delay = 0;
 
-  /* ---- TODAY VIEW (With Holiday Mode) ---- */
+  /* ---- TODAY VIEW ---- */
   if(currentTab === 'today') {
     if(data[currentUser].holidayMode) {
       c.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center opacity-0 animate-slide-up mt-20">
-        <div class="w-24 h-24 bg-indigo-500/20 rounded-full flex items-center justify-center mb-4">
-          <i class="fa-solid fa-umbrella-beach text-4xl text-indigo-400"></i>
-        </div>
-        <h2 class="text-2xl font-bold text-white mb-2">Holiday Mode Active</h2>
-        <p class="text-slate-400">Enjoy your break! Disable this in settings when classes resume.</p>
+        <div class="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-umbrella-beach text-4xl text-amber-500"></i></div>
+        <h2 class="text-2xl font-black text-stone-800 mb-2">Holiday Mode Active</h2>
+        <p class="text-stone-500 font-medium">Enjoy your break! Disable this in settings when classes resume.</p>
       </div>`;
       return;
     }
@@ -338,15 +437,13 @@ function render() {
     const todayName = days[new Date().getDay()];
     const todayClasses = timetable[todayName];
 
-    c.innerHTML = `
-      <div class="flex items-center justify-between mb-4 mt-2">
-        <h2 class="text-2xl font-bold text-white">Your Day</h2>
-        <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-full text-xs font-bold uppercase tracking-wider">${todayName}</span>
-      </div>
-    `;
+    c.innerHTML = `<div class="flex items-center justify-between mb-4 mt-2">
+        <h2 class="text-2xl font-black text-stone-800">Your Day</h2>
+        <span class="px-3 py-1 bg-amber-100/80 text-amber-800 border border-amber-200/50 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">${todayName}</span>
+      </div>`;
 
     if(todayClasses.length === 0) {
-      c.innerHTML += `<div class="glass-card rounded-3xl p-8 text-center text-slate-400 opacity-0 animate-slide-up"><i class="fa-solid fa-mug-hot text-4xl mb-4 text-indigo-400/50"></i><p>No classes today. Enjoy!</p></div>`;
+      c.innerHTML += `<div class="glass-card rounded-3xl p-8 text-center text-stone-500 font-medium opacity-0 animate-slide-up"><i class="fa-solid fa-mug-hot text-4xl mb-4 text-amber-300"></i><p>No classes today. Enjoy!</p></div>`;
       return;
     }
 
@@ -359,23 +456,23 @@ function render() {
       let cardClass = "glass-card rounded-3xl p-5 mb-4 opacity-0 animate-slide-up border-l-4";
       if(lastType === "present") cardClass += " border-l-emerald-500 status-present";
       else if(lastType === "bunk") cardClass += " border-l-rose-500 status-bunk";
-      else if(lastType === "cancelled") cardClass += " border-l-slate-400 status-cancelled";
-      else cardClass += " border-l-indigo-500";
+      else if(lastType === "cancelled") cardClass += " border-l-stone-400 status-cancelled";
+      else cardClass += " border-l-amber-500";
 
       c.innerHTML += `
         <div class="${cardClass}" style="animation-delay: ${delay}ms">
           <div class="flex justify-between items-start mb-4">
             <div>
-              <h3 class="text-xl font-bold text-white">${i.sub}</h3>
-              <p class="text-slate-400 text-sm mt-1"><i class="fa-regular fa-clock text-indigo-400 mr-1"></i> ${i.time} &nbsp;&nbsp; <i class="fa-solid fa-location-dot text-rose-400/80 mr-1"></i> ${i.room}</p>
+              <h3 class="text-xl font-bold text-stone-800">${i.sub}</h3>
+              <p class="text-stone-500 font-medium text-sm mt-1"><i class="fa-regular fa-clock text-amber-600 mr-1"></i> ${i.time} &nbsp;&nbsp; <i class="fa-solid fa-location-dot text-rose-400 mr-1"></i> ${i.room}</p>
             </div>
-            <div class="bg-white/5 px-2 py-1 rounded-lg text-xs font-bold text-slate-300">${per}%</div>
+            <div class="bg-beige-100 border border-beige-200 px-2 py-1 rounded-lg text-xs font-bold text-stone-600">${per}%</div>
           </div>
           <div class="grid grid-cols-4 gap-2">
-            <button onclick="mark('${i.sub}','present')" class="btn-active bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 py-2 rounded-xl text-lg"><i class="fa-solid fa-check"></i></button>
-            <button onclick="mark('${i.sub}','bunk')" class="btn-active bg-rose-500/10 text-rose-400 border border-rose-500/30 py-2 rounded-xl text-lg"><i class="fa-solid fa-xmark"></i></button>
-            <button onclick="mark('${i.sub}','cancelled')" class="btn-active bg-slate-500/10 text-slate-400 border border-slate-500/30 py-2 rounded-xl text-lg"><i class="fa-solid fa-ban"></i></button>
-            <button onclick="undo('${i.sub}')" class="btn-active bg-slate-800 text-slate-300 border border-slate-600/50 py-2 rounded-xl text-lg"><i class="fa-solid fa-rotate-left"></i></button>
+            <button onclick="mark('${i.sub}','present')" class="btn-active bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 py-2 rounded-xl text-lg shadow-sm"><i class="fa-solid fa-check"></i></button>
+            <button onclick="mark('${i.sub}','bunk')" class="btn-active bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 py-2 rounded-xl text-lg shadow-sm"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="mark('${i.sub}','cancelled')" class="btn-active bg-stone-100 hover:bg-stone-200 text-stone-500 border border-stone-200 py-2 rounded-xl text-lg shadow-sm"><i class="fa-solid fa-ban"></i></button>
+            <button onclick="undo('${i.sub}')" class="btn-active bg-white/80 hover:bg-white text-stone-600 border border-beige-200 py-2 rounded-xl text-lg shadow-sm"><i class="fa-solid fa-rotate-left"></i></button>
           </div>
         </div>
       `;
@@ -384,57 +481,55 @@ function render() {
     return;
   }
 
-  /* ---- TRACKER VIEW (With Partner Widget) ---- */
+  /* ---- TRACKER VIEW ---- */
   if(currentTab === 'tracker') {
     const partner = currentUser === "kartik" ? "tara" : "kartik";
     const partnerStats = calculateStats(data[partner]);
     const isWinning = parseFloat(stats.percent) >= parseFloat(partnerStats.percent);
 
-    // Accountability Partner Widget
     c.innerHTML = `
-      <div class="glass-card rounded-2xl p-3 mb-4 flex justify-between items-center opacity-0 animate-slide-up border border-indigo-500/30 bg-gradient-to-r from-indigo-500/10 to-transparent">
+      <div class="glass-card rounded-2xl p-3 mb-4 flex justify-between items-center opacity-0 animate-slide-up border border-amber-200/50 bg-gradient-to-r from-amber-50/50 to-transparent">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold uppercase">${partner[0]}</div>
-          <div>
-            <p class="text-xs text-slate-400 capitalize">${partner}'s Status</p>
-            <p class="text-sm font-bold text-white">${partnerStats.percent}%</p>
-          </div>
+          <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-black uppercase shadow-sm">${partner[0]}</div>
+          <div><p class="text-xs text-stone-500 font-medium capitalize">${partner}'s Status</p><p class="text-sm font-black text-stone-800">${partnerStats.percent}%</p></div>
         </div>
-        ${!isWinning ? '<i class="fa-solid fa-crown text-yellow-500 text-xl drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]"></i>' : '<p class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">You lead!</p>'}
+        ${!isWinning ? '<i class="fa-solid fa-crown text-amber-500 text-xl drop-shadow-sm"></i>' : '<p class="text-xs font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-1 rounded shadow-sm">You lead!</p>'}
       </div>
-    `;
-
-    // Chart
-    c.innerHTML += `
       <div class="glass-card rounded-3xl p-5 mb-6 flex items-center justify-between opacity-0 animate-slide-up">
         <div class="w-24 h-24 relative"><canvas id="attendanceChart"></canvas></div>
         <div class="flex-1 pl-6">
-          <p class="text-xs text-slate-400 uppercase font-bold mb-1">Target: ${data[currentUser].target || 75}%</p>
-          <p class="text-sm text-slate-300 mb-1"><span class="inline-block w-3 h-3 rounded-full bg-emerald-400 mr-2"></span>${stats.p} Attended</p>
-          <p class="text-sm text-slate-300"><span class="inline-block w-3 h-3 rounded-full bg-rose-400 mr-2"></span>${stats.t - stats.p} Bunked</p>
+          <p class="text-xs text-stone-400 uppercase font-bold mb-1">Global Target: ${data[currentUser].target || 75}%</p>
+          <p class="text-sm font-semibold text-stone-700 mb-1"><span class="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-2 shadow-sm"></span>${stats.p} Attended</p>
+          <p class="text-sm font-semibold text-stone-700"><span class="inline-block w-3 h-3 rounded-full bg-rose-500 mr-2 shadow-sm"></span>${stats.t - stats.p} Bunked</p>
         </div>
       </div>
     `;
     setTimeout(() => renderChart(stats), 50);
 
-    let subjects = {};
-    Object.keys(timetable).forEach(day => timetable[day].forEach(i => subjects[i.sub] = i));
-    
-    Object.values(subjects).forEach(i => {
-      let d = data[currentUser][i.sub] || {p: 0, t: 0, history: []};
+    Object.values(allSubjects).forEach(sub => {
+      let d = data[currentUser][sub] || {p: 0, t: 0, history: []};
       let per = d.t ? ((d.p / d.t) * 100).toFixed(1) : 0;
-      let targetNum = data[currentUser].target || 75;
+      let targetNum = data[currentUser].targets?.[sub] || data[currentUser].target || 75;
       let isDanger = parseFloat(per) < targetNum;
       
       c.innerHTML += `
         <div class="glass-card rounded-3xl p-5 mb-4 opacity-0 animate-slide-up relative">
-          <div class="flex justify-between items-end mb-3">
-            <h3 class="text-lg font-bold text-white">${i.sub}</h3>
-            <div class="text-xl font-black ${isDanger && d.t > 0 ? 'text-rose-400' : 'text-emerald-400'}">${per}%</div>
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <h3 class="text-lg font-bold text-stone-800">${sub}</h3>
+              <span class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Target: ${targetNum}%</span>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-black ${isDanger && d.t > 0 ? 'text-rose-500' : 'text-emerald-500'} leading-none">${per}%</div>
+              <button onclick="openForecast('${sub}')" class="text-indigo-500 hover:text-indigo-600 text-xs font-bold mt-1 inline-flex items-center gap-1 transition-colors">
+                <i class="fa-solid fa-crystal-ball"></i> Forecast
+              </button>
+            </div>
           </div>
-          <div class="w-full bg-slate-800/50 rounded-full h-1.5 mb-3">
-            <div class="h-1.5 rounded-full ${isDanger ? 'bg-gradient-to-r from-rose-500 to-pink-500' : 'bg-gradient-to-r from-emerald-400 to-teal-500'} transition-all" style="width: ${per}%"></div>
+          <div class="w-full bg-beige-200/50 rounded-full h-2 mb-2 overflow-hidden shadow-inner border border-beige-200 mt-1">
+            <div class="h-full rounded-full ${isDanger ? 'bg-gradient-to-r from-rose-400 to-rose-500' : 'bg-gradient-to-r from-emerald-400 to-emerald-500'} transition-all" style="width: ${per}%"></div>
           </div>
+          <p class="text-right text-[10px] text-stone-400 font-bold uppercase tracking-wider">${d.p} / ${d.t} Classes</p>
         </div>
       `;
       delay += 50;
@@ -444,45 +539,29 @@ function render() {
 
   /* ---- HISTORY TIMELINE ---- */
   if(currentTab === 'history') {
-    c.innerHTML = `<h2 class="text-xl font-bold text-white mb-4 mt-2">Recent Activity</h2>`;
-    
+    c.innerHTML = `<h2 class="text-xl font-black text-stone-800 mb-4 mt-2">Recent Activity</h2>`;
     let allHistory = [];
     Object.keys(data[currentUser]).forEach(sub => {
-      if(sub === 'target' || sub === 'holidayMode') return;
-      let hist = data[currentUser][sub].history || [];
-      hist.forEach(h => {
-        // Handle backwards compatibility for old string data
-        if(typeof h === 'string') {
-          allHistory.push({ sub: sub, type: h, date: 0 }); // Old data goes to bottom
-        } else {
-          allHistory.push({ sub: sub, type: h.type, date: h.date });
-        }
+      if(sub === 'target' || sub === 'holidayMode' || sub === 'targets') return;
+      (data[currentUser][sub].history || []).forEach(h => {
+        allHistory.push(typeof h === 'string' ? { sub: sub, type: h, date: 0 } : { sub: sub, type: h.type, date: h.date });
       });
     });
-
-    // Sort newest first
     allHistory.sort((a, b) => b.date - a.date);
 
     if(allHistory.length === 0) {
-      c.innerHTML += `<div class="text-center text-slate-400 mt-10">No history yet.</div>`;
-      return;
+      c.innerHTML += `<div class="text-center text-stone-500 font-medium mt-10">No history yet.</div>`; return;
     }
 
-    // Render top 50 recent events
     allHistory.slice(0, 50).forEach(item => {
-      let icon = item.type === 'present' ? '<i class="fa-solid fa-check text-emerald-400"></i>' : 
-                 item.type === 'bunk' ? '<i class="fa-solid fa-xmark text-rose-400"></i>' : 
-                 '<i class="fa-solid fa-ban text-slate-400"></i>';
-      
-      let dateString = item.date === 0 ? "Older Data" : new Date(item.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+      let icon = item.type === 'present' ? '<i class="fa-solid fa-check text-emerald-600"></i>' : 
+                 item.type === 'bunk' ? '<i class="fa-solid fa-xmark text-rose-600"></i>' : '<i class="fa-solid fa-ban text-stone-500"></i>';
+      let dateString = item.date === 0 ? "Older Data" : `${new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • ${new Date(item.date).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`;
 
       c.innerHTML += `
-        <div class="flex items-center gap-4 p-3 border-b border-white/5 opacity-0 animate-slide-up" style="animation-delay: ${delay}ms">
-          <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">${icon}</div>
-          <div class="flex-1">
-            <p class="text-white font-bold">${item.sub}</p>
-            <p class="text-xs text-slate-400 capitalize">${item.type} • ${dateString}</p>
-          </div>
+        <div class="flex items-center gap-4 p-3 border-b border-beige-200/50 opacity-0 animate-slide-up" style="animation-delay: ${delay}ms">
+          <div class="w-10 h-10 rounded-full bg-white/60 border border-beige-200 flex items-center justify-center shadow-sm">${icon}</div>
+          <div class="flex-1"><p class="text-stone-800 font-bold">${item.sub}</p><p class="text-xs text-stone-500 font-medium capitalize">${item.type} • ${dateString}</p></div>
         </div>
       `;
       delay += 20;
@@ -494,14 +573,11 @@ function render() {
   if(currentTab === 'timetable') {
     Object.keys(timetable).forEach(day => {
       if(timetable[day].length === 0) return;
-      let dayHtml = `<div class="mb-8 opacity-0 animate-slide-up" style="animation-delay: ${delay}ms">
-          <h3 class="text-indigo-300 font-bold text-lg mb-3 ml-1">${day}</h3>
-          <div class="space-y-3">`;
+      let dayHtml = `<div class="mb-8 opacity-0 animate-slide-up" style="animation-delay: ${delay}ms"><h3 class="text-amber-700 font-bold text-lg mb-3 ml-1">${day}</h3><div class="space-y-3">`;
       timetable[day].forEach(i => {
-        dayHtml += `
-          <div class="glass-card rounded-2xl p-4 flex justify-between items-center">
-            <div><b class="text-white text-md block">${i.sub}</b><span class="text-slate-400 text-xs">${i.room}</span></div>
-            <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1.5 rounded-lg">${i.time}</span>
+        dayHtml += `<div class="glass-card rounded-2xl p-4 flex justify-between items-center">
+            <div><b class="text-stone-800 text-md block font-bold">${i.sub}</b><span class="text-stone-500 font-medium text-xs">${i.room}</span></div>
+            <span class="text-xs font-bold text-amber-800 bg-amber-100/50 border border-amber-200 px-3 py-1.5 rounded-lg shadow-sm">${i.time}</span>
           </div>`;
       });
       dayHtml += `</div></div>`;
@@ -516,15 +592,12 @@ async function load() {
     let snap = await getDoc(doc(db, "attendance", "shared"));
     if(snap.exists()) {
       data = snap.data();
-      if(!data.kartik) data.kartik = { target: 75, holidayMode: false };
-      if(!data.tara) data.tara = { target: 75, holidayMode: false };
+      if(!data.kartik) data.kartik = { target: 75, holidayMode: false, targets: {} };
+      if(!data.tara) data.tara = { target: 75, holidayMode: false, targets: {} };
       render();
     }
-  } catch (error) {
-    document.getElementById("content").innerHTML = `<div class="text-center text-rose-400 mt-10">Connection error.</div>`;
-  }
+  } catch (error) { document.getElementById("content").innerHTML = `<div class="text-center text-rose-500 mt-10 font-bold">Connection error.</div>`; }
 }
-
 load();
 </script>
 </body>
