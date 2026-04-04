@@ -542,23 +542,42 @@ function render() {
   }
 
   /* ---- TRACKER & INSIGHTS VIEW ---- */
-  if(currentTab === 'tracker') {
+  /* ---- TRACKER & INSIGHTS VIEW ---- */
+if(currentTab === 'tracker') {
     const partner = currentUser === "kartik" ? "tara" : "kartik";
     const partnerStats = calculateStats(data[partner]);
     const insights = generateInsights(stats.history);
+    
+    // Who is winning?
+    const userPercent = parseFloat(stats.percent);
+    const partnerPercent = parseFloat(partnerStats.percent);
+    const isWinning = userPercent > partnerPercent;
 
-    // Partner Widget with NUDGE button
+    // Partner Widget
     c.innerHTML = `
-      <div class="glass-card rounded-2xl p-3 mb-4 flex justify-between items-center opacity-0 animate-slide-up border border-amber-200/50 dark:border-indigo-500/30 bg-gradient-to-r from-amber-50/50 dark:from-indigo-500/10 to-transparent">
+      <div class="glass-card rounded-2xl p-4 mb-4 flex justify-between items-center opacity-0 animate-slide-up border border-amber-200/50 dark:border-indigo-500/30 bg-gradient-to-r from-amber-50/50 dark:from-indigo-500/10 to-transparent">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full bg-amber-100 dark:bg-indigo-500/20 flex items-center justify-center text-amber-700 dark:text-indigo-400 font-black uppercase shadow-sm">${partner[0]}</div>
-          <div><p class="text-xs text-stone-500 dark:text-slate-400 font-medium capitalize">${partner}'s Status</p><p class="text-sm font-black text-stone-800 dark:text-white">${partnerStats.percent}%</p></div>
+          <div class="relative">
+            <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-indigo-500/20 flex items-center justify-center text-amber-700 dark:text-indigo-400 font-black uppercase shadow-sm border border-white dark:border-slate-800">${partner[0]}</div>
+            ${!isWinning ? '<i class="fa-solid fa-crown absolute -top-2 -left-2 text-amber-500 text-sm rotate-[-20deg] drop-shadow-sm"></i>' : ''}
+          </div>
+          <div>
+            <p class="text-[10px] text-stone-500 dark:text-slate-400 font-bold uppercase tracking-widest">${partner}'s Status</p>
+            <p class="text-base font-black text-stone-800 dark:text-white">${partnerStats.percent}%</p>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="sendNudge()" class="btn-active bg-amber-200 dark:bg-indigo-500 text-amber-800 dark:text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md animate-bounce-soft"><i class="fa-solid fa-bell text-xs"></i></button>
+        
+        <div class="flex items-center gap-3">
+          ${isWinning ? '<span class="text-[9px] font-black text-emerald-600 bg-emerald-100 dark:bg-emerald-500/20 px-2 py-1 rounded-full uppercase border border-emerald-200 dark:border-emerald-500/30">You Lead!</span>' : ''}
+          <button onclick="sendNudge()" class="btn-active bg-amber-200 dark:bg-indigo-500 text-amber-800 dark:text-white w-9 h-9 rounded-full flex items-center justify-center shadow-lg hover:shadow-amber-200/50 transition-all active:scale-90">
+            <i class="fa-solid fa-bell animate-swing"></i>
+          </button>
         </div>
       </div>
     `;
+
+    // ... rest of your analytics and chart code ...
+
 
     // Analytics Wrap-up
     c.innerHTML += `
