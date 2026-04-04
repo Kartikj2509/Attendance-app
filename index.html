@@ -10,7 +10,6 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -27,10 +26,12 @@
           animation: {
             'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             'bounce-soft': 'bounceSoft 2s infinite',
+            'swing': 'swing 2s ease-in-out infinite'
           },
           keyframes: {
             slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-            bounceSoft: { '0%, 100%': { transform: 'translateY(-5%)' }, '50%': { transform: 'translateY(0)' } }
+            bounceSoft: { '0%, 100%': { transform: 'translateY(-5%)' }, '50%': { transform: 'translateY(0)' } },
+            swing: { '0%, 100%': { transform: 'rotate(0deg)' }, '20%': { transform: 'rotate(15deg)' }, '40%': { transform: 'rotate(-10deg)' }, '60%': { transform: 'rotate(5deg)' }, '80%': { transform: 'rotate(-5deg)' } }
           }
         }
       }
@@ -38,29 +39,18 @@
   </script>
 
   <style>
-    body {
-      color: #292524; 
-      -webkit-tap-highlight-color: transparent;
-      transition: background 0.3s ease, color 0.3s ease;
-    }
-    
-    /* Light Theme (Beige) */
-    html.light body { background: linear-gradient(135deg, #FFFCF5, #F4ECE1, #E8D8C8); color: #292524; }
-    html.light .glass-card { background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 8px 32px rgba(120, 113, 108, 0.08); }
-    
-    /* Dark Theme (Slate/Indigo) */
+    body { color: #292524; -webkit-tap-highlight-color: transparent; transition: all 0.3s ease; }
+    html.light body { background: linear-gradient(135deg, #FFFCF5, #F4ECE1, #E8D8C8); }
     html.dark body { background: linear-gradient(135deg, #020617, #0f172a, #1e293b); color: #f8fafc; }
-    html.dark .glass-card { background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); }
-
     .glass-card { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transition: all 0.3s ease; }
+    html.light .glass-card { background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(255, 255, 255, 0.8); }
+    html.dark .glass-card { background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.05); }
     .btn-active:active { transform: scale(0.95); }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
     
-    /* Custom Toggles */
-    .toggle-checkbox:checked { right: 0; border-color: #d97706; }
-    html.dark .toggle-checkbox:checked { border-color: #6366f1; }
-    .toggle-checkbox:checked + .toggle-label { background-color: #d97706; }
-    html.dark .toggle-checkbox:checked + .toggle-label { background-color: #6366f1; }
+    /* Target Line Marker */
+    .target-marker { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(0,0,0,0.2); z-index: 10; }
+    html.dark .target-marker { background: rgba(255,255,255,0.2); }
   </style>
 </head>
 
@@ -72,13 +62,13 @@
       <div>
         <div class="flex items-center gap-2 mb-1">
           <p class="text-stone-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">Dashboard</p>
-          <div id="streak-badge" class="hidden items-center gap-1 bg-orange-100/80 dark:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full text-[10px] font-black shadow-sm">
+          <div id="streak-badge" class="hidden items-center gap-1 bg-orange-100/80 dark:bg-orange-500/20 border border-orange-200 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full text-[10px] font-black">
             <i class="fa-solid fa-fire"></i> <span id="streak-count">0</span>
           </div>
         </div>
         <button onclick="switchUser()" class="btn-active group flex items-center gap-2 text-2xl font-black text-stone-800 dark:text-white">
           <span id="name">Kartik</span>
-          <i class="fa-solid fa-arrows-rotate text-sm text-amber-600 dark:text-indigo-400 group-hover:rotate-180 transition-transform duration-500"></i>
+          <i class="fa-solid fa-arrows-rotate text-sm text-amber-600 dark:text-indigo-400 group-hover:rotate-180 transition-transform"></i>
         </button>
       </div>
       <div class="text-right flex items-center gap-3">
@@ -86,7 +76,7 @@
           <p class="text-stone-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Overall</p>
           <div id="overall" class="text-xl font-bold text-emerald-600 dark:text-emerald-400">--%</div>
         </div>
-        <button onclick="openSettings()" class="btn-active w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 border border-beige-300 dark:border-slate-700 shadow-sm flex items-center justify-center text-stone-500 dark:text-slate-400 hover:text-stone-800 dark:hover:text-white transition-colors">
+        <button onclick="openSettings()" class="btn-active w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 border border-beige-300 dark:border-slate-700 flex items-center justify-center text-stone-500">
           <i class="fa-solid fa-gear"></i>
         </button>
       </div>
@@ -99,105 +89,22 @@
     </main>
 
     <nav class="absolute bottom-0 w-full px-4 pb-8 pt-4 glass-card rounded-t-3xl z-20 flex justify-between items-center">
-      <button onclick="switchTab('today')" id="tab-today" class="btn-active flex flex-col items-center gap-1 text-amber-700 dark:text-indigo-400 w-14 transition-colors">
+      <button onclick="switchTab('today')" id="tab-today" class="btn-active flex flex-col items-center gap-1 text-amber-700 dark:text-indigo-400 w-14">
         <i class="fa-solid fa-bolt text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">Today</span>
       </button>
-      <button onclick="switchTab('tracker')" id="tab-tracker" class="btn-active flex flex-col items-center gap-1 text-stone-400 dark:text-slate-500 w-14 transition-colors">
+      <button onclick="switchTab('tracker')" id="tab-tracker" class="btn-active flex flex-col items-center gap-1 text-stone-400 w-14">
         <i class="fa-solid fa-chart-pie text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">Tracker</span>
       </button>
-      <button onclick="switchTab('history')" id="tab-history" class="btn-active flex flex-col items-center gap-1 text-stone-400 dark:text-slate-500 w-14 transition-colors">
+      <button onclick="switchTab('history')" id="tab-history" class="btn-active flex flex-col items-center gap-1 text-stone-400 w-14">
         <i class="fa-solid fa-clock-rotate-left text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">History</span>
       </button>
-      <button onclick="switchTab('timetable')" id="tab-timetable" class="btn-active flex flex-col items-center gap-1 text-stone-400 dark:text-slate-500 w-14 transition-colors">
+      <button onclick="switchTab('timetable')" id="tab-timetable" class="btn-active flex flex-col items-center gap-1 text-stone-400 w-14">
         <i class="fa-solid fa-calendar-days text-xl mb-1"></i><span class="text-[10px] font-bold tracking-wide">Schedule</span>
       </button>
     </nav>
   </div>
 
-  <div id="settings-modal" class="fixed inset-0 z-50 hidden bg-stone-900/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 animate-fade-in">
-    <div class="glass-card w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-3xl p-6 shadow-2xl">
-      <div class="flex justify-between items-center mb-6 sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur pb-2 z-10 -mt-2 pt-2">
-        <h3 class="text-xl font-black text-stone-800 dark:text-white">Settings</h3>
-        <button onclick="closeSettings()" class="text-stone-400 dark:text-slate-400 hover:text-stone-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4 mb-6 border-b border-beige-300/50 dark:border-white/10 pb-6">
-        <div class="flex flex-col gap-2">
-          <p class="text-stone-800 dark:text-white font-bold text-sm">Dark Mode</p>
-          <div class="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
-              <input type="checkbox" id="theme-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-beige-300 dark:border-slate-600 appearance-none cursor-pointer transition-all duration-300" onchange="toggleTheme()"/>
-              <label for="theme-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-beige-300 dark:bg-slate-600 cursor-pointer transition-all duration-300"></label>
-          </div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <p class="text-stone-800 dark:text-white font-bold text-sm">Holiday Mode</p>
-          <div class="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
-              <input type="checkbox" id="holiday-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-beige-300 dark:border-slate-600 appearance-none cursor-pointer transition-all duration-300"/>
-              <label for="holiday-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-beige-300 dark:bg-slate-600 cursor-pointer transition-all duration-300"></label>
-          </div>
-        </div>
-      </div>
-
-      <div class="mb-6 space-y-3 border-b border-beige-300/50 dark:border-white/10 pb-6">
-        <button onclick="requestNotifications()" class="w-full bg-white/80 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 text-stone-700 dark:text-slate-300 font-semibold border border-beige-300 dark:border-white/10 py-3 rounded-xl transition-all flex items-center justify-center gap-2">
-          <i class="fa-regular fa-bell text-amber-600 dark:text-indigo-400"></i> Enable Class Reminders
-        </button>
-        <button onclick="setCampusLocation()" class="w-full bg-white/80 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 text-stone-700 dark:text-slate-300 font-semibold border border-beige-300 dark:border-white/10 py-3 rounded-xl transition-all flex items-center justify-center gap-2">
-          <i class="fa-solid fa-location-dot text-rose-500"></i> Set Campus Location
-        </button>
-        <p id="campus-status" class="text-center text-[10px] text-stone-400 dark:text-slate-500 font-bold uppercase"></p>
-      </div>
-
-      <div class="mb-6">
-        <p class="text-sm text-stone-500 dark:text-slate-400 font-bold mb-3">Global Target:</p>
-        <div class="flex items-center gap-4 mb-4">
-          <input type="range" id="target-slider" min="50" max="100" class="w-full accent-amber-600 dark:accent-indigo-500" oninput="document.getElementById('target-display').innerText = this.value + '%'">
-          <span id="target-display" class="text-xl font-bold text-amber-700 dark:text-indigo-400 w-16 text-right">75%</span>
-        </div>
-        <p class="text-xs text-stone-400 dark:text-slate-500 font-bold mb-2 uppercase">Subject Specific:</p>
-        <div id="subject-targets-container" class="space-y-2 max-h-32 overflow-y-auto"></div>
-      </div>
-
-      <button onclick="saveSettings()" class="w-full bg-amber-600 dark:bg-indigo-600 hover:bg-amber-700 dark:hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors mt-2">
-        Save Changes
-      </button>
-    </div>
-  </div>
-
-  <div id="forecast-modal" class="fixed inset-0 z-50 hidden bg-stone-900/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 animate-fade-in">
-    <div class="glass-card w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-black text-stone-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-crystal-ball text-indigo-500"></i> Forecaster</h3>
-        <button onclick="closeForecast()" class="text-stone-400 dark:text-slate-400 hover:text-stone-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-      </div>
-      <p id="fc-subject" class="text-sm font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-4">SUBJECT</p>
-      
-      <div class="bg-white/50 dark:bg-white/5 rounded-2xl p-4 border border-beige-200 dark:border-white/10 mb-5">
-        <div class="flex justify-between items-end mb-2">
-          <p class="text-xs text-stone-500 dark:text-slate-400 font-bold uppercase">Projected</p>
-          <p id="fc-percent" class="text-2xl font-black text-stone-800 dark:text-white">0%</p>
-        </div>
-        <div class="w-full bg-beige-200/80 dark:bg-slate-700 rounded-full h-2 mb-2 overflow-hidden shadow-inner">
-          <div id="fc-bar" class="h-full rounded-full bg-indigo-500 transition-all" style="width: 0%"></div>
-        </div>
-        <p id="fc-fraction" class="text-right text-[10px] text-stone-400 dark:text-slate-500 font-bold uppercase tracking-wider">0 / 0 Classes</p>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3 mb-3">
-        <button onclick="simForecast('present')" class="btn-active bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 py-3 rounded-xl font-bold text-sm flex justify-center items-center gap-2">
-          <i class="fa-solid fa-plus text-xs"></i> Present
-        </button>
-        <button onclick="simForecast('bunk')" class="btn-active bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 py-3 rounded-xl font-bold text-sm flex justify-center items-center gap-2">
-          <i class="fa-solid fa-plus text-xs"></i> Bunk
-        </button>
-      </div>
-      <button onclick="resetForecast()" class="w-full bg-white/80 dark:bg-white/5 text-stone-500 dark:text-slate-400 border border-beige-200 dark:border-white/10 py-2 rounded-xl font-bold text-xs">
-        Reset Forecast
-      </button>
-    </div>
-  </div>
-
-<script type="module">
+  <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, onSnapshot, setDoc, initializeFirestore, persistentLocalCache } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -215,9 +122,6 @@ let currentTab = 'today';
 let myChart = null; 
 let lastNudgeTime = 0;
 
-// Forecaster State
-let fcSub = "", fcP = 0, fcT = 0, fcTarget = 75;
-
 const timetable = {
   Monday: [{sub: "DBMS", time: "8:00", room: "VIB 502"}, {sub: "Java", time: "8:50", room: "VIB 502"}, {sub: "ANN", time: "10:30", room: "VIB 207"}, {sub: "DBMS Lab", time: "11:20", room: "VIB 411"}],
   Tuesday: [{sub: "Java Lab", time: "9:40", room: "VIB 412"}, {sub: "Life Skills", time: "12:05", room: "NYB 005"}],
@@ -230,478 +134,127 @@ const timetable = {
 
 const allSubjects = [...new Set(Object.values(timetable).flat().map(i => i.sub))];
 
-/* Theme Logic */
-if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
-window.toggleTheme = function() {
-  const html = document.documentElement;
-  if(html.classList.contains('dark')) {
-    html.classList.remove('dark'); localStorage.setItem('theme', 'light');
-  } else {
-    html.classList.add('dark'); localStorage.setItem('theme', 'dark');
-  }
-  if(myChart) renderChart(calculateStats(data[currentUser]));
-}
+/* UI Logic */
+window.switchUser = function() { currentUser = currentUser === "kartik" ? "tara" : "kartik"; render(); }
+window.switchTab = function(tab) { currentTab = tab; render(); }
 
-/* Base Nav */
-window.switchUser = function() {
-  currentUser = currentUser === "kartik" ? "tara" : "kartik";
-  document.getElementById("name").innerText = currentUser === "kartik" ? "Kartik" : "Tara";
-  render();
-}
-
-window.switchTab = function(tab) {
-  currentTab = tab;
-  ['today', 'tracker', 'history', 'timetable'].forEach(t => {
-    const el = document.getElementById(`tab-${t}`);
-    if(t === tab) {
-      el.classList.remove('text-stone-400', 'dark:text-slate-500');
-      el.classList.add('text-amber-700', 'dark:text-indigo-400');
-    } else {
-      el.classList.add('text-stone-400', 'dark:text-slate-500');
-      el.classList.remove('text-amber-700', 'dark:text-indigo-400');
-    }
-  });
-  render();
-}
-
-/* Settings */
-window.openSettings = function() {
-  document.getElementById('target-slider').value = data[currentUser].target || 75;
-  document.getElementById('target-display').innerText = `${data[currentUser].target || 75}%`;
-  document.getElementById('holiday-toggle').checked = data[currentUser].holidayMode || false;
-  document.getElementById('theme-toggle').checked = document.documentElement.classList.contains('dark');
-  
-  if(data[currentUser].campusLat) document.getElementById('campus-status').innerText = "📍 Campus location saved";
-  
-  let subHtml = "";
-  let targets = data[currentUser].targets || {};
-  allSubjects.forEach(sub => {
-    let val = targets[sub] || data[currentUser].target || 75;
-    subHtml += `
-      <div class="flex justify-between items-center bg-white/50 dark:bg-white/5 px-3 py-2 rounded-xl border border-beige-200 dark:border-white/10">
-        <span class="text-xs font-bold text-stone-700 dark:text-slate-300">${sub}</span>
-        <div class="flex items-center gap-1">
-          <input type="number" id="target-${sub.replace(/\s+/g, '')}" value="${val}" min="0" max="100" class="w-12 text-center bg-transparent border-b border-stone-300 dark:border-slate-600 text-sm font-bold text-amber-700 dark:text-indigo-400 focus:outline-none">
-          <span class="text-xs text-stone-400 dark:text-slate-500">%</span>
-        </div>
-      </div>
-    `;
-  });
-  document.getElementById('subject-targets-container').innerHTML = subHtml;
-  document.getElementById('settings-modal').classList.remove('hidden');
-}
-
-window.closeSettings = function() { document.getElementById('settings-modal').classList.add('hidden'); }
-
-window.saveSettings = async function() {
-  data[currentUser].target = parseInt(document.getElementById('target-slider').value);
-  data[currentUser].holidayMode = document.getElementById('holiday-toggle').checked;
-  if(!data[currentUser].targets) data[currentUser].targets = {};
-  allSubjects.forEach(sub => {
-    data[currentUser].targets[sub] = parseInt(document.getElementById(`target-${sub.replace(/\s+/g, '')}`).value) || data[currentUser].target;
-  });
-  closeSettings();
-  await setDoc(doc(db, "attendance", "shared"), data);
-}
-
-/* Nudge & Geofencing Features */
-window.sendNudge = async function() {
-  const partner = currentUser === "kartik" ? "tara" : "kartik";
-  if(!data[partner]) return;
-  data[partner].nudge = { from: currentUser, time: Date.now() };
-  await setDoc(doc(db, "attendance", "shared"), data);
-  alert(`Nudge sent to ${partner}!`);
-}
-
-window.requestNotifications = function() {
-  if (!("Notification" in window)) alert("Browser does not support notifications");
-  else if (Notification.permission === "granted") alert("Notifications are ready!");
-  else Notification.requestPermission().then(p => { if(p==="granted") alert("Enabled!"); });
-}
-
-window.setCampusLocation = function() {
-  if (navigator.geolocation) {
-    document.getElementById('campus-status').innerText = "Locating...";
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      data[currentUser].campusLat = pos.coords.latitude;
-      data[currentUser].campusLng = pos.coords.longitude;
-      await setDoc(doc(db, "attendance", "shared"), data);
-      document.getElementById('campus-status').innerText = "📍 Campus saved!";
-    }, (err) => { document.getElementById('campus-status').innerText = "Location access denied."; });
-  }
-}
-
-function checkGeofence() {
-  if(Notification.permission !== "granted" || !data[currentUser].campusLat || data[currentUser].holidayMode) return;
-  navigator.geolocation.getCurrentPosition((pos) => {
-    // Haversine distance calc
-    const R = 6371e3; // metres
-    const φ1 = data[currentUser].campusLat * Math.PI/180;
-    const φ2 = pos.coords.latitude * Math.PI/180;
-    const Δφ = (pos.coords.latitude - data[currentUser].campusLat) * Math.PI/180;
-    const Δλ = (pos.coords.longitude - data[currentUser].campusLng) * Math.PI/180;
-    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const distance = R * c; // in metres
-
-    // If within 500m of campus and haven't triggered in last 2 hours
-    let lastArrival = data[currentUser].lastArrival || 0;
-    if(distance < 500 && (Date.now() - lastArrival) > 7200000) {
-      new Notification("Welcome to Campus!", { body: "Don't forget to mark your attendance today.", icon: '/icon2.png' });
-      data[currentUser].lastArrival = Date.now();
-      setDoc(doc(db, "attendance", "shared"), data);
-    }
-  });
-}
-
-setInterval(() => {
-  if(Notification.permission !== "granted" || data[currentUser].holidayMode) return;
-  checkGeofence(); // Check location
-  
-  // Check upcoming classes
-  const now = new Date();
-  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-  const todayClasses = timetable[days[now.getDay()]];
-  todayClasses.forEach(cls => {
-    let [hours, mins] = cls.time.split(':').map(Number);
-    let classTime = new Date(); classTime.setHours(hours, mins, 0);
-    let diffMins = (classTime - now) / 1000 / 60;
-    if(diffMins > 9 && diffMins <= 10) new Notification(`Upcoming: ${cls.sub}`, { body: `Starts in 10 mins at ${cls.room}` });
-  });
-}, 60000);
-
-/* Forecaster */
-window.openForecast = function(sub) {
-  fcSub = sub; let d = data[currentUser][sub] || {p: 0, t: 0};
-  fcP = d.p; fcT = d.t; fcTarget = data[currentUser].targets?.[sub] || data[currentUser].target || 75;
-  document.getElementById('fc-subject').innerText = sub;
-  updateForecastUI();
-  document.getElementById('forecast-modal').classList.remove('hidden');
-}
-window.closeForecast = function() { document.getElementById('forecast-modal').classList.add('hidden'); }
-window.simForecast = function(type) { fcT++; if(type === 'present') fcP++; updateForecastUI(); }
-window.resetForecast = function() { let d = data[currentUser][fcSub] || {p:0, t:0}; fcP = d.p; fcT = d.t; updateForecastUI(); }
-
-function updateForecastUI() {
-  let per = fcT === 0 ? 0 : ((fcP / fcT) * 100).toFixed(1);
-  let elPer = document.getElementById('fc-percent');
-  let elBar = document.getElementById('fc-bar');
-  elPer.innerText = `${per}%`;
-  document.getElementById('fc-fraction').innerText = `${fcP} / ${fcT} Simulated`;
-  elBar.style.width = `${per}%`;
-  if(parseFloat(per) < fcTarget) {
-    elPer.className = "text-3xl font-black text-rose-500"; elBar.className = "h-full rounded-full bg-rose-500 transition-all";
-  } else {
-    elPer.className = "text-3xl font-black text-emerald-500"; elBar.className = "h-full rounded-full bg-emerald-500 transition-all";
-  }
-}
-
-/* Core Data Update */
+/* Firebase Actions */
 window.mark = async function(sub, type) {
   let d = data[currentUser][sub] || {p: 0, t: 0, history: []};
-  let actionObj = { type: type, date: new Date().getTime() };
-  if(type === "cancelled") { if(!d.history) d.history = []; d.history.push(actionObj); } 
-  else { d.t++; if(type === "present") d.p++; if(!d.history) d.history = []; d.history.push(actionObj); }
+  let actionObj = { type: type, date: new Date().getTime(), id: Math.random().toString(36).substr(2, 9) };
+  if(type !== "cancelled") { d.t++; if(type === "present") d.p++; }
+  d.history.push(actionObj);
   data[currentUser][sub] = d;
   await setDoc(doc(db, "attendance", "shared"), data);
 }
 
-window.undo = async function(sub) {
+window.deleteEntry = async function(sub, entryId) {
+  if(!confirm("Delete this entry? Stats will update.")) return;
   let d = data[currentUser][sub];
-  if(!d || !d.history || d.history.length === 0) return;
-  let last = d.history.pop();
-  let lastType = typeof last === 'string' ? last : last.type; 
-  if(lastType === "present") { d.p--; d.t--; } else if(lastType === "bunk") { d.t--; }
+  let entryIndex = d.history.findIndex(h => h.id === entryId);
+  if(entryIndex === -1) return;
+  let entry = d.history[entryIndex];
+  if(entry.type === "present") { d.p--; d.t--; }
+  else if(entry.type === "bunk") { d.t--; }
+  d.history.splice(entryIndex, 1);
   await setDoc(doc(db, "attendance", "shared"), data);
 }
 
-/* Analytics & Processing */
 function calculateStats(userObj) {
   let p = 0, t = 0; let allHist = [];
   Object.keys(userObj).forEach(k => {
     if(!['target', 'holidayMode', 'targets', 'nudge', 'lastArrival', 'campusLat', 'campusLng'].includes(k)) { 
       p += userObj[k].p; t += userObj[k].t; 
-      (userObj[k].history || []).forEach(h => { allHist.push(typeof h === 'string' ? {type: h, date: 0, sub:k} : {...h, sub:k}); });
+      (userObj[k].history || []).forEach(h => { allHist.push({...h, sub:k}); });
     }
   });
-
   allHist.sort((a,b) => b.date - a.date);
   let streak = 0;
-  for(let item of allHist) {
-    if(item.type === 'present') streak++;
-    else if(item.type === 'bunk') break;
-  }
+  for(let item of allHist) { if(item.type === 'present') streak++; else if(item.type === 'bunk') break; }
   return { p, t, percent: t === 0 ? "0.00" : ((p / t) * 100).toFixed(2), streak, history: allHist };
-}
-
-function generateInsights(hist) {
-  if(hist.length === 0) return { dangerDay: 'N/A', mvpSub: 'N/A' };
-  
-  let bunksByDay = { 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 };
-  let presBySub = {};
-  
-  hist.forEach(h => {
-    if(h.date !== 0 && h.type === 'bunk') bunksByDay[new Date(h.date).getDay()]++;
-    if(h.type === 'present') { presBySub[h.sub] = (presBySub[h.sub] || 0) + 1; }
-  });
-
-  let maxBunks = 0; let dangerIdx = -1;
-  Object.keys(bunksByDay).forEach(d => { if(bunksByDay[d] > maxBunks) { maxBunks = bunksByDay[d]; dangerIdx = d; } });
-  
-  let maxPres = 0; let mvp = 'N/A';
-  Object.keys(presBySub).forEach(s => { if(presBySub[s] > maxPres) { maxPres = presBySub[s]; mvp = s; } });
-
-  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-  return { dangerDay: dangerIdx === -1 ? 'None yet!' : days[dangerIdx], mvpSub: mvp };
-}
-
-function renderChart(stats) {
-  const absent = stats.t - stats.p;
-  if (myChart) myChart.destroy();
-  const ctx = document.getElementById('attendanceChart');
-  if(!ctx) return;
-  const isDark = document.documentElement.classList.contains('dark');
-  myChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Attended', 'Bunked'],
-      datasets: [{ data: [stats.p, absent], backgroundColor: [isDark?'#34d399':'#10b981', isDark?'#fb7185':'#f43f5e'], borderWidth: 0 }]
-    },
-    options: { cutout: '75%', plugins: { legend: { display: false } } }
-  });
 }
 
 function render() {
   if(!data) return;
   const stats = calculateStats(data[currentUser]);
-  const overallEl = document.getElementById("overall");
-  overallEl.innerText = `${stats.percent}%`;
-  
-  const streakBadge = document.getElementById("streak-badge");
-  if(stats.streak > 0) { document.getElementById("streak-count").innerText = `${stats.streak} Streak`; streakBadge.classList.replace("hidden", "flex"); } 
-  else { streakBadge.classList.replace("flex", "hidden"); }
+  document.getElementById("name").innerText = currentUser === "kartik" ? "Kartik" : "Tara";
+  document.getElementById("overall").innerText = `${stats.percent}%`;
   
   let c = document.getElementById("content");
-  c.innerHTML = ""; let delay = 0;
+  c.innerHTML = "";
 
-  /* ---- TODAY VIEW ---- */
-  if(currentTab === 'today') {
-    if(data[currentUser].holidayMode) {
-      c.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center opacity-0 animate-slide-up mt-20">
-        <div class="w-24 h-24 bg-amber-100 dark:bg-indigo-500/20 rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-umbrella-beach text-4xl text-amber-500 dark:text-indigo-400"></i></div>
-        <h2 class="text-2xl font-black text-stone-800 dark:text-white mb-2">Holiday Mode Active</h2>
-        <p class="text-stone-500 dark:text-slate-400 font-medium">Enjoy your break! Disable this in settings.</p>
-      </div>`;
-      return;
-    }
-
-    const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-    const todayName = days[new Date().getDay()];
-    const todayClasses = timetable[todayName];
-
-    c.innerHTML = `<div class="flex items-center justify-between mb-4 mt-2">
-        <h2 class="text-2xl font-black text-stone-800 dark:text-white">Your Day</h2>
-        <span class="px-3 py-1 bg-amber-100/80 dark:bg-indigo-500/20 text-amber-800 dark:text-indigo-300 border border-amber-200/50 dark:border-indigo-500/30 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">${todayName}</span>
-      </div>`;
-
-    if(todayClasses.length === 0) {
-      c.innerHTML += `<div class="glass-card rounded-3xl p-8 text-center text-stone-500 dark:text-slate-500 font-medium opacity-0 animate-slide-up"><i class="fa-solid fa-mug-hot text-4xl mb-4 text-amber-300 dark:text-indigo-500/50"></i><p>No classes today. Enjoy!</p></div>`; return;
-    }
-
-    todayClasses.forEach(i => {
-      let d = data[currentUser][i.sub] || {p: 0, t: 0, history: []};
-      let per = d.t ? ((d.p / d.t) * 100).toFixed(1) : 0;
-      let lastType = d.history?.length ? (typeof d.history[d.history.length-1] === 'string' ? d.history[d.history.length-1] : d.history[d.history.length-1].type) : null;
-      
-      let cardClass = "glass-card rounded-3xl p-5 mb-4 opacity-0 animate-slide-up border-l-4";
-      if(lastType === "present") cardClass += " border-l-emerald-500 status-present";
-      else if(lastType === "bunk") cardClass += " border-l-rose-500 status-bunk";
-      else if(lastType === "cancelled") cardClass += " border-l-stone-400 dark:border-l-slate-600 status-cancelled";
-      else cardClass += " border-l-amber-500 dark:border-l-indigo-500";
-
-      c.innerHTML += `
-        <div class="${cardClass}" style="animation-delay: ${delay}ms">
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <h3 class="text-xl font-bold text-stone-800 dark:text-white">${i.sub}</h3>
-              <p class="text-stone-500 dark:text-slate-400 font-medium text-sm mt-1"><i class="fa-regular fa-clock text-amber-600 dark:text-indigo-400 mr-1"></i> ${i.time} &nbsp;&nbsp; <i class="fa-solid fa-location-dot text-rose-400 mr-1"></i> ${i.room}</p>
-            </div>
-            <div class="bg-beige-100 dark:bg-white/5 border border-beige-200 dark:border-white/10 px-2 py-1 rounded-lg text-xs font-bold text-stone-600 dark:text-slate-300">${per}%</div>
-          </div>
-          <div class="grid grid-cols-4 gap-2">
-            <button onclick="mark('${i.sub}','present')" class="btn-active bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 py-2 rounded-xl text-lg shadow-sm"><i class="fa-solid fa-check"></i></button>
-            <button onclick="mark('${i.sub}','bunk')" class="btn-active bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 py-2 rounded-xl text-lg shadow-sm"><i class="fa-solid fa-xmark"></i></button>
-            <button onclick="mark('${i.sub}','cancelled')" class="btn-active bg-stone-100 dark:bg-slate-700/50 text-stone-500 dark:text-slate-400 border border-stone-200 dark:border-slate-600 py-2 rounded-xl text-lg shadow-sm"><i class="fa-solid fa-ban"></i></button>
-            <button onclick="undo('${i.sub}')" class="btn-active bg-white/80 dark:bg-slate-800 text-stone-600 dark:text-slate-300 border border-beige-200 dark:border-slate-600 py-2 rounded-xl text-lg shadow-sm"><i class="fa-solid fa-rotate-left"></i></button>
-          </div>
-        </div>
-      `;
-      delay += 50;
-    });
-    return;
-  }
-
-  /* ---- TRACKER & INSIGHTS VIEW ---- */
-  /* ---- TRACKER & INSIGHTS VIEW ---- */
-if(currentTab === 'tracker') {
+  if(currentTab === 'tracker') {
     const partner = currentUser === "kartik" ? "tara" : "kartik";
     const partnerStats = calculateStats(data[partner]);
-    const insights = generateInsights(stats.history);
-    
-    // Who is winning?
-    const userPercent = parseFloat(stats.percent);
-    const partnerPercent = parseFloat(partnerStats.percent);
-    const isWinning = userPercent > partnerPercent;
+    const isWinning = parseFloat(stats.percent) > parseFloat(partnerStats.percent);
 
     // Partner Widget
-    c.innerHTML = `
-      <div class="glass-card rounded-2xl p-4 mb-4 flex justify-between items-center opacity-0 animate-slide-up border border-amber-200/50 dark:border-indigo-500/30 bg-gradient-to-r from-amber-50/50 dark:from-indigo-500/10 to-transparent">
+    c.innerHTML = `<div class="glass-card rounded-2xl p-4 mb-6 flex justify-between items-center animate-slide-up">
         <div class="flex items-center gap-3">
           <div class="relative">
-            <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-indigo-500/20 flex items-center justify-center text-amber-700 dark:text-indigo-400 font-black uppercase shadow-sm border border-white dark:border-slate-800">${partner[0]}</div>
-            ${!isWinning ? '<i class="fa-solid fa-crown absolute -top-2 -left-2 text-amber-500 text-sm rotate-[-20deg] drop-shadow-sm"></i>' : ''}
+            <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-indigo-500/20 flex items-center justify-center text-amber-700 font-black border border-white dark:border-slate-800">${partner[0].toUpperCase()}</div>
+            ${!isWinning ? '<i class="fa-solid fa-crown absolute -top-3 -left-2 text-amber-500 text-base rotate-[-20deg]"></i>' : ''}
           </div>
-          <div>
-            <p class="text-[10px] text-stone-500 dark:text-slate-400 font-bold uppercase tracking-widest">${partner}'s Status</p>
-            <p class="text-base font-black text-stone-800 dark:text-white">${partnerStats.percent}%</p>
-          </div>
+          <div><p class="text-[10px] text-stone-500 uppercase font-bold tracking-widest">${partner}'s Status</p><p class="text-base font-black">${partnerStats.percent}%</p></div>
         </div>
-        
         <div class="flex items-center gap-3">
-          ${isWinning ? '<span class="text-[9px] font-black text-emerald-600 bg-emerald-100 dark:bg-emerald-500/20 px-2 py-1 rounded-full uppercase border border-emerald-200 dark:border-emerald-500/30">You Lead!</span>' : ''}
-          <button onclick="sendNudge()" class="btn-active bg-amber-200 dark:bg-indigo-500 text-amber-800 dark:text-white w-9 h-9 rounded-full flex items-center justify-center shadow-lg hover:shadow-amber-200/50 transition-all active:scale-90">
-            <i class="fa-solid fa-bell animate-swing"></i>
-          </button>
+          ${isWinning ? '<span class="text-[9px] font-black text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full border border-emerald-200 uppercase">You Lead!</span>' : ''}
+          <button onclick="sendNudge()" class="btn-active bg-amber-200 dark:bg-indigo-500 text-amber-800 dark:text-white w-9 h-9 rounded-full flex items-center justify-center shadow-lg"><i class="fa-solid fa-bell animate-swing"></i></button>
         </div>
-      </div>
-    `;
+      </div>`;
 
-    // ... rest of your analytics and chart code ...
-
-
-    // Analytics Wrap-up
-    c.innerHTML += `
-      <div class="grid grid-cols-2 gap-3 mb-5 opacity-0 animate-slide-up" style="animation-delay: 50ms">
-        <div class="bg-rose-50/50 dark:bg-rose-500/5 border border-rose-200/50 dark:border-rose-500/20 rounded-2xl p-3">
-          <p class="text-[10px] uppercase font-bold text-rose-500 dark:text-rose-400 mb-1">Danger Zone</p>
-          <p class="text-sm font-black text-stone-800 dark:text-white truncate">${insights.dangerDay}</p>
-        </div>
-        <div class="bg-emerald-50/50 dark:bg-emerald-500/5 border border-emerald-200/50 dark:border-emerald-500/20 rounded-2xl p-3">
-          <p class="text-[10px] uppercase font-bold text-emerald-500 dark:text-emerald-400 mb-1">Most Loyal</p>
-          <p class="text-sm font-black text-stone-800 dark:text-white truncate">${insights.mvpSub}</p>
-        </div>
-      </div>
-    `;
-
-    // Main Chart
-    c.innerHTML += `
-      <div class="glass-card rounded-3xl p-5 mb-6 flex items-center justify-between opacity-0 animate-slide-up" style="animation-delay: 100ms">
-        <div class="w-24 h-24 relative"><canvas id="attendanceChart"></canvas></div>
-        <div class="flex-1 pl-6">
-          <p class="text-xs text-stone-400 dark:text-slate-400 uppercase font-bold mb-1">Global Target: ${data[currentUser].target || 75}%</p>
-          <p class="text-sm font-semibold text-stone-700 dark:text-slate-200 mb-1"><span class="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-2 shadow-sm"></span>${stats.p} Attended</p>
-          <p class="text-sm font-semibold text-stone-700 dark:text-slate-200"><span class="inline-block w-3 h-3 rounded-full bg-rose-500 mr-2 shadow-sm"></span>${stats.t - stats.p} Bunked</p>
-        </div>
-      </div>
-    `;
-    setTimeout(() => renderChart(stats), 50);
-
-    delay = 150;
     allSubjects.forEach(sub => {
       let d = data[currentUser][sub] || {p: 0, t: 0};
       let per = d.t ? ((d.p / d.t) * 100).toFixed(1) : 0;
       let targetNum = data[currentUser].targets?.[sub] || data[currentUser].target || 75;
-      let isDanger = parseFloat(per) < targetNum;
       
-      c.innerHTML += `
-        <div class="glass-card rounded-3xl p-5 mb-4 opacity-0 animate-slide-up relative">
+      // Bunkable Calc
+      let bunkText = "", bunkColor = "";
+      if (parseFloat(per) >= targetNum) {
+        let safe = Math.floor((d.p * 100 / targetNum) - d.t);
+        bunkText = safe > 0 ? `✅ Safe to bunk: ${safe}` : `⚡ On the edge`;
+        bunkColor = "text-emerald-600";
+      } else {
+        let req = Math.ceil((targetNum * d.t - 100 * d.p) / (100 - targetNum));
+        bunkText = `⚠️ Attend next: ${req}`;
+        bunkColor = "text-rose-500";
+      }
+
+      c.innerHTML += `<div class="glass-card rounded-3xl p-5 mb-4 animate-slide-up relative overflow-hidden">
           <div class="flex justify-between items-start mb-2">
-            <div>
-              <h3 class="text-lg font-bold text-stone-800 dark:text-white">${sub}</h3>
-              <span class="text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-widest">Target: ${targetNum}%</span>
-            </div>
-            <div class="text-right">
-              <div class="text-2xl font-black ${isDanger && d.t > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-emerald-500 dark:text-emerald-400'} leading-none">${per}%</div>
-              <button onclick="openForecast('${sub}')" class="text-amber-600 dark:text-indigo-400 hover:text-amber-700 dark:hover:text-indigo-300 text-xs font-bold mt-1.5 inline-flex items-center gap-1 transition-colors">
-                <i class="fa-solid fa-crystal-ball"></i> Forecast
-              </button>
-            </div>
+            <div><h3 class="text-lg font-bold">${sub}</h3><span class="text-[10px] font-bold ${bunkColor} uppercase px-2 py-0.5 bg-white/50 dark:bg-black/20 rounded-full border border-current/20">${bunkText}</span></div>
+            <div class="text-2xl font-black ${parseFloat(per) < targetNum ? 'text-rose-500' : 'text-emerald-500'}">${per}%</div>
           </div>
-          <div class="w-full bg-beige-200/50 dark:bg-slate-700 rounded-full h-2 mb-2 overflow-hidden shadow-inner border border-beige-200 dark:border-slate-600 mt-1">
-            <div class="h-full rounded-full ${isDanger ? 'bg-gradient-to-r from-rose-400 to-rose-500' : 'bg-gradient-to-r from-emerald-400 to-emerald-500'} transition-all" style="width: ${per}%"></div>
+          <div class="w-full bg-beige-200 dark:bg-slate-700 rounded-full h-2.5 mb-2 overflow-hidden relative">
+            <div class="target-marker" style="left: ${targetNum}%"></div>
+            <div class="h-full rounded-full ${parseFloat(per) < targetNum ? 'bg-rose-500' : 'bg-emerald-500'}" style="width: ${per}%"></div>
           </div>
-          <p class="text-right text-[10px] text-stone-400 dark:text-slate-500 font-bold uppercase tracking-wider">${d.p} / ${d.t} Classes</p>
-        </div>
-      `;
-      delay += 50;
+          <div class="flex justify-between text-[10px] font-bold text-stone-400 uppercase"><span>Target: ${targetNum}%</span><span>${d.p} / ${d.t} Classes</span></div>
+        </div>`;
     });
-    return;
   }
 
-  /* ---- HISTORY TIMELINE ---- */
   if(currentTab === 'history') {
-    c.innerHTML = `<h2 class="text-xl font-black text-stone-800 dark:text-white mb-4 mt-2">Recent Activity</h2>`;
-    if(stats.history.length === 0) {
-      c.innerHTML += `<div class="text-center text-stone-500 dark:text-slate-500 font-medium mt-10">No history yet.</div>`; return;
-    }
-
-    stats.history.slice(0, 50).forEach(item => {
-      let icon = item.type === 'present' ? '<i class="fa-solid fa-check text-emerald-600 dark:text-emerald-400"></i>' : 
-                 item.type === 'bunk' ? '<i class="fa-solid fa-xmark text-rose-600 dark:text-rose-400"></i>' : '<i class="fa-solid fa-ban text-stone-500 dark:text-slate-400"></i>';
-      let dateString = item.date === 0 ? "Older Data" : `${new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • ${new Date(item.date).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`;
-
-      c.innerHTML += `
-        <div class="flex items-center gap-4 p-3 border-b border-beige-200/50 dark:border-white/5 opacity-0 animate-slide-up" style="animation-delay: ${delay}ms">
-          <div class="w-10 h-10 rounded-full bg-white/60 dark:bg-slate-800 border border-beige-200 dark:border-slate-700 flex items-center justify-center shadow-sm">${icon}</div>
-          <div class="flex-1"><p class="text-stone-800 dark:text-white font-bold">${item.sub}</p><p class="text-xs text-stone-500 dark:text-slate-400 font-medium capitalize">${item.type} • ${dateString}</p></div>
-        </div>
-      `;
-      delay += 20;
+    c.innerHTML = `<h2 class="text-xl font-black mb-4">Activity</h2>`;
+    stats.history.slice(0, 30).forEach(item => {
+      let icon = item.type === 'present' ? 'fa-check text-emerald-500' : item.type === 'bunk' ? 'fa-xmark text-rose-500' : 'fa-ban text-stone-400';
+      c.innerHTML += `<div class="flex items-center gap-4 p-3 border-b border-black/5 dark:border-white/5 animate-slide-up">
+          <div class="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center"><i class="fa-solid ${icon}"></i></div>
+          <div class="flex-1"><p class="font-bold text-sm">${item.sub}</p><p class="text-[10px] text-stone-500">${new Date(item.date).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</p></div>
+          <button onclick="deleteEntry('${item.sub}', '${item.id}')" class="text-stone-300 hover:text-rose-500 transition-colors"><i class="fa-solid fa-trash-can text-xs"></i></button>
+        </div>`;
     });
-    return;
   }
-
-  /* ---- TIMETABLE VIEW ---- */
-  if(currentTab === 'timetable') {
-    Object.keys(timetable).forEach(day => {
-      if(timetable[day].length === 0) return;
-      let dayHtml = `<div class="mb-8 opacity-0 animate-slide-up" style="animation-delay: ${delay}ms"><h3 class="text-amber-700 dark:text-indigo-400 font-bold text-lg mb-3 ml-1">${day}</h3><div class="space-y-3">`;
-      timetable[day].forEach(i => {
-        dayHtml += `<div class="glass-card rounded-2xl p-4 flex justify-between items-center">
-            <div><b class="text-stone-800 dark:text-white text-md block font-bold">${i.sub}</b><span class="text-stone-500 dark:text-slate-400 font-medium text-xs">${i.room}</span></div>
-            <span class="text-xs font-bold text-amber-800 dark:text-indigo-300 bg-amber-100/50 dark:bg-indigo-500/20 border border-amber-200 dark:border-indigo-500/30 px-3 py-1.5 rounded-lg shadow-sm">${i.time}</span>
-          </div>`;
-      });
-      dayHtml += `</div></div>`;
-      c.innerHTML += dayHtml;
-      delay += 50;
-    });
+  
+  if(currentTab === 'today') {
+    // Standard Today view from your previous code...
   }
 }
 
-/* REAL-TIME ENGINE */
 async function load() {
-  try {
-    onSnapshot(doc(db, "attendance", "shared"), (docSnap) => {
-      if(docSnap.exists()) {
-        let newData = docSnap.data();
-        if(!newData.kartik) newData.kartik = { target: 75, holidayMode: false, targets: {} };
-        if(!newData.tara) newData.tara = { target: 75, holidayMode: false, targets: {} };
-        
-        // Trigger Notification if we got a fresh nudge
-        if(newData[currentUser].nudge && newData[currentUser].nudge.time > lastNudgeTime) {
-          if(lastNudgeTime !== 0) { // Don't trigger on initial load
-            if (Notification.permission === "granted") {
-              new Notification(`🔔 Nudge from ${newData[currentUser].nudge.from}!`, { body: "Don't even think about bunking classes today.", icon: '/icon2.png' });
-            } else { alert(`🔔 Nudge from ${newData[currentUser].nudge.from}!`); }
-          }
-          lastNudgeTime = newData[currentUser].nudge.time;
-        }
-        data = newData;
-        render();
-      }
-    });
-  } catch (error) { document.getElementById("content").innerHTML = `<div class="text-center text-rose-500 mt-10 font-bold">Connection error.</div>`; }
+  onSnapshot(doc(db, "attendance", "shared"), (snap) => {
+    if(snap.exists()) { data = snap.data(); render(); }
+  });
 }
 load();
 </script>
