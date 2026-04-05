@@ -314,15 +314,39 @@ function render() {
     });
   }
 
-  if(currentTab === 'history') {
-    c.innerHTML = `<h2 class="text-xl font-black mb-4">Activity</h2>`;
-    stats.history.slice(0, 30).forEach(item => {
-      let icon = item.type === 'present' ? 'fa-check text-emerald-500' : 'fa-xmark text-rose-500';
-      c.innerHTML += `<div class="flex items-center gap-4 p-3 border-b border-black/5 animate-slide-up">
-        <div class="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center"><i class="fa-solid ${icon}"></i></div>
-        <div class="flex-1"><p class="font-bold text-sm">${item.sub}</p><p class="text-[10px] text-stone-500 uppercase">${new Date(item.date).toLocaleDateString()} • ${new Date(item.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</p></div>
-      </div>`;
+    if(currentTab === 'history') {
+    c.innerHTML = `<h2 class="text-xl font-black text-stone-800 dark:text-white mb-4 mt-2">Recent Activity</h2>`;
+    if(stats.history.length === 0) { 
+      c.innerHTML += `<div class="text-center text-stone-500 dark:text-slate-500 font-medium mt-10">No history yet.</div>`; 
+      return; 
+    }
+    
+    stats.history.slice(0, 50).forEach(item => {
+      // Fix for legacy database entries causing "Invalid Date"
+      let dateObj = new Date(item.date);
+      let dateString = "Older Entry"; // Default fallback
+      
+      // If the date exists and is a valid number, format it nicely
+      if (item.date && !isNaN(dateObj)) {
+        dateString = `${dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' })} • ${dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      }
+
+      let icon = item.type === 'present' ? '<i class="fa-solid fa-check text-emerald-600 dark:text-emerald-400"></i>' : 
+                 item.type === 'bunk' ? '<i class="fa-solid fa-xmark text-rose-600 dark:text-rose-400"></i>' : '<i class="fa-solid fa-ban text-stone-500 dark:text-slate-400"></i>';
+      
+      c.innerHTML += `
+        <div class="flex items-center gap-4 p-3 border-b border-beige-200/50 dark:border-white/5 opacity-0 animate-slide-up" style="animation-delay: ${delay}ms">
+          <div class="w-10 h-10 rounded-full bg-white/60 dark:bg-slate-800 border border-beige-200 dark:border-slate-700 flex items-center justify-center shadow-sm">${icon}</div>
+          <div class="flex-1">
+            <p class="text-stone-800 dark:text-white font-bold">${item.sub}</p>
+            <p class="text-[10px] text-stone-500 dark:text-slate-400 font-black uppercase tracking-wider">${item.type} • ${dateString}</p>
+          </div>
+          <button onclick="deleteEntry('${item.sub}', '${item.id}')" class="text-stone-300 hover:text-rose-500 transition-colors"><i class="fa-solid fa-trash-can text-xs"></i></button>
+        </div>
+      `;
+      delay += 20;
     });
+    return;
   }
 
   if(currentTab === 'timetable') {
