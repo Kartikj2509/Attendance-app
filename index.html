@@ -340,23 +340,50 @@ function render() {
     }
   });
 
-  if(currentTab === 'today') {
+    if(currentTab === 'today') {
     const day = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
     const todayClasses = timetable[day] || [];
+    const isHoliday = data[currentUser].holidayMode; // Check if holiday mode is toggled on
+
     c.innerHTML = `<h2 class="text-2xl font-black mb-4">Your Day</h2>`;
-    todayClasses.forEach(i => {
-      let d = data[currentUser][i.sub] || {p:0, t:0};
-      c.innerHTML += `<div class="glass-card rounded-3xl p-5 mb-4 animate-slide-up">
-        <div class="flex justify-between mb-4"><div><h3 class="text-xl font-bold">${i.sub}</h3><p class="text-stone-500 text-sm font-medium mt-1">${i.time} • ${i.room}</p></div><div class="text-xs font-black text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">${d.t ? ((d.p/d.t)*100).toFixed(0) : 0}%</div></div>
-        <div class="grid grid-cols-4 gap-2">
-          <button onclick="mark('${i.sub}','present')" class="btn-active bg-emerald-50 text-emerald-600 py-3 rounded-xl"><i class="fa-solid fa-check"></i></button>
-          <button onclick="mark('${i.sub}','bunk')" class="btn-active bg-rose-50 text-rose-600 py-3 rounded-xl"><i class="fa-solid fa-xmark"></i></button>
-          <button onclick="mark('${i.sub}','cancelled')" class="btn-active bg-stone-100 text-stone-500 py-3 rounded-xl"><i class="fa-solid fa-ban"></i></button>
-          <button onclick="undo('${i.sub}')" class="btn-active bg-white text-stone-300 py-3 rounded-xl border border-beige-200"><i class="fa-solid fa-rotate-left"></i></button>
-        </div>
-      </div>`;
-    });
+
+    if (isHoliday) {
+      // Show Holiday Mode UI
+      c.innerHTML += `
+        <div class="glass-card rounded-3xl p-8 text-center animate-slide-up mt-10">
+          <div class="w-20 h-20 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-umbrella-beach text-3xl text-rose-500"></i>
+          </div>
+          <h3 class="text-xl font-black text-stone-800 dark:text-white mb-2">Holiday Mode</h3>
+          <p class="text-sm text-stone-500 dark:text-slate-400 font-medium">Kick back and relax. Your attendance is paused.</p>
+        </div>`;
+    } else if (todayClasses.length === 0) {
+      // Show No Classes UI (e.g., Sunday)
+      c.innerHTML += `
+        <div class="glass-card rounded-3xl p-8 text-center animate-slide-up mt-10">
+          <div class="w-20 h-20 bg-emerald-100 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-mug-hot text-3xl text-emerald-500"></i>
+          </div>
+          <h3 class="text-xl font-black text-stone-800 dark:text-white mb-2">It's a Free Day!</h3>
+          <p class="text-sm text-stone-500 dark:text-slate-400 font-medium">Enjoy your ${day}. You have no classes scheduled.</p>
+        </div>`;
+    } else {
+      // Show Normal Classes
+      todayClasses.forEach(i => {
+        let d = data[currentUser][i.sub] || {p:0, t:0};
+        c.innerHTML += `<div class="glass-card rounded-3xl p-5 mb-4 animate-slide-up">
+          <div class="flex justify-between mb-4"><div><h3 class="text-xl font-bold">${i.sub}</h3><p class="text-stone-500 text-sm font-medium mt-1">${i.time} • ${i.room}</p></div><div class="text-xs font-black text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">${d.t ? ((d.p/d.t)*100).toFixed(0) : 0}%</div></div>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="mark('${i.sub}','present')" class="btn-active bg-emerald-50 text-emerald-600 py-3 rounded-xl"><i class="fa-solid fa-check"></i></button>
+            <button onclick="mark('${i.sub}','bunk')" class="btn-active bg-rose-50 text-rose-600 py-3 rounded-xl"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="mark('${i.sub}','cancelled')" class="btn-active bg-stone-100 text-stone-500 py-3 rounded-xl"><i class="fa-solid fa-ban"></i></button>
+            <button onclick="undo('${i.sub}')" class="btn-active bg-white text-stone-300 py-3 rounded-xl border border-beige-200"><i class="fa-solid fa-rotate-left"></i></button>
+          </div>
+        </div>`;
+      });
+    }
   }
+
 
   if(currentTab === 'tracker') {
     c.innerHTML = `<div class="glass-card rounded-2xl p-4 mb-6 flex justify-between items-center animate-slide-up">
