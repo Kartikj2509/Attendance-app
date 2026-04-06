@@ -75,7 +75,7 @@
           </div>
         </div>
         <button onclick="switchUser()" class="btn-active group flex items-center gap-2 text-2xl font-black text-stone-800 dark:text-white">
-          <span id="name">Kartik</span>
+          <span id="name">KJ</span>
           <i class="fa-solid fa-arrows-rotate text-sm text-amber-600 group-hover:rotate-180 transition-transform duration-500"></i>
         </button>
       </div>
@@ -158,7 +158,7 @@ import { getFirestore, doc, onSnapshot, setDoc, initializeFirestore, persistentL
 const app = initializeApp({ apiKey: "AIzaSyA3R5plHfBl1VU2MOenTYIZJEKRQ0iIcZQ", authDomain: "attendance-ea8db.firebaseapp.com", projectId: "attendance-ea8db" });
 const db = initializeFirestore(app, { localCache: persistentLocalCache() });
 
-let currentUser = "kartik", data = null, currentTab = 'today', myChart = null;
+let currentUser = "KJ", data = null, currentTab = 'today', myChart = null;
 let fcSub = "", fcP = 0, fcT = 0, fcTarget = 75;
 
 const timetable = {
@@ -172,7 +172,7 @@ const timetable = {
 };
 const allSubjects = [...new Set(Object.values(timetable).flat().map(i => i.sub))];
 
-window.switchUser = function() { currentUser = currentUser === "kartik" ? "tara" : "kartik"; render(); }
+window.switchUser = function() { currentUser = currentUser === "KJ" ? "Taaraa" : "KJ"; render(); }
 window.switchTab = function(tab) { currentTab = tab; render(); }
 window.toggleTheme = function() { document.documentElement.classList.toggle('dark'); }
 window.openSettings = function() { 
@@ -350,7 +350,8 @@ function calculateStats(userObj) {
       p += userObj[k].p; t += userObj[k].t;
       (userObj[k].history || []).forEach(h => allHist.push({...h, sub: k}));
     }
-
+  });
+  
   // FIX: Bulletproof time-based sorting
   allHist.sort((a, b) => {
     // This forces any weird dates into valid numbers, and defaults to 0 if totally broken
@@ -359,12 +360,6 @@ function calculateStats(userObj) {
     return timeB - timeA; // Pushes the highest (newest) number to the top
   });
   
-  let streak = 0;
-  for(let item of allHist) { if(item.type === 'present') streak++; else if(item.type === 'bunk') break; }
-  return { p, t, percent: t === 0 ? "0.00" : ((p/t)*100).toFixed(2), streak, history: allHist };
-}
-
-  allHist.sort((a,b) => b.date - a.date);
   let streak = 0;
   for(let item of allHist) { if(item.type === 'present') streak++; else if(item.type === 'bunk') break; }
   return { p, t, percent: t === 0 ? "0.00" : ((p/t)*100).toFixed(2), streak, history: allHist };
@@ -384,12 +379,12 @@ function renderChart(stats) {
 function render() {
   if(!data) return;
   const stats = calculateStats(data[currentUser]);
-  const partner = currentUser === "kartik" ? "tara" : "kartik";
+  const partner = currentUser === "KJ" ? "Taaraa" : "KJ";
   const partnerStats = calculateStats(data[partner]);
   const isWinning = parseFloat(stats.percent) > parseFloat(partnerStats.percent);
   const targetNum = data[currentUser].target || 75;
 
-  document.getElementById("name").innerText = currentUser === "kartik" ? "Kartik" : "Tara";
+  document.getElementById("name").innerText = currentUser;
   document.getElementById("overall").innerText = `${stats.percent}%`;
   document.getElementById("streak-count").innerText = `${stats.streak} Streak`;
   document.getElementById("streak-badge").style.display = stats.streak > 0 ? "flex" : "none";
@@ -493,7 +488,7 @@ function render() {
   }
 
       if(currentTab === 'history') {
-    let delay = 0; // FIX: Declare delay variable
+    let delay = 0; 
     c.innerHTML = `<h2 class="text-xl font-black text-stone-800 dark:text-white mb-4 mt-2">Recent Activity</h2>`;
     if(stats.history.length === 0) { 
       c.innerHTML += `<div class="text-center text-stone-500 dark:text-slate-500 font-medium mt-10">No history yet.</div>`; 
@@ -504,7 +499,6 @@ function render() {
       let dateObj = new Date(item.date);
       let dateString = "Unknown Date"; 
       
-      // FIX: Proper date validation
       if (item.date && !isNaN(dateObj.getTime())) {
         dateString = `${dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' })} • ${dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
       }
@@ -512,7 +506,6 @@ function render() {
       let icon = item.type === 'present' ? '<i class="fa-solid fa-check text-emerald-600 dark:text-emerald-400"></i>' : 
                  item.type === 'bunk' ? '<i class="fa-solid fa-xmark text-rose-600 dark:text-rose-400"></i>' : '<i class="fa-solid fa-ban text-stone-500 dark:text-slate-400"></i>';
       
-      // FIX: Pass item.date to deleteEntry instead of missing item.id
       c.innerHTML += `
         <div class="flex items-center gap-4 p-3 border-b border-beige-200/50 dark:border-white/5 opacity-0 animate-slide-up" style="animation-delay: ${delay}ms">
           <div class="w-10 h-10 rounded-full bg-white/60 dark:bg-slate-800 border border-beige-200 dark:border-slate-700 flex items-center justify-center shadow-sm">${icon}</div>
@@ -528,9 +521,6 @@ function render() {
     return;
   }
 
-    
-    
-
   if(currentTab === 'timetable') {
     Object.keys(timetable).forEach(day => {
       if(!timetable[day].length) return;
@@ -542,43 +532,65 @@ function render() {
     });
   }
 }
-
 async function load() {
   onSnapshot(
     doc(db, "attendance", "shared"), 
     async (snap) => {
       if (snap.exists()) { 
-        data = snap.data(); 
-        render(); 
+        let dbData = snap.data();
+        let needsMigration = false;
+
+        // --- DATA MIGRATION CHECK ---
+        // If it finds the old names, it copies the data to the new names
+        if (dbData.kartik || dbData.tara) {
+          console.log("Old names found! Migrating data to KJ and Taaraa...");
+          
+          if (dbData.kartik) {
+            dbData.KJ = dbData.kartik; // Copy kartik's data to KJ
+            delete dbData.kartik;      // Delete the old kartik data
+          }
+          if (dbData.tara) {
+            dbData.Taaraa = dbData.tara; // Copy tara's data to Taaraa
+            delete dbData.tara;          // Delete the old tara data
+          }
+          needsMigration = true;
+        }
+
+        if (needsMigration) {
+          // Save the newly renamed data back to Firebase
+          await setDoc(doc(db, "attendance", "shared"), dbData);
+          // Note: Saving it will automatically trigger this function again to render it
+        } else {
+          // If no migration was needed, just load the app normally
+          data = dbData; 
+          render(); 
+        }
+
       } else {
         // This runs if the database is completely empty
         console.log("No data found, creating initial database...");
         data = {
-          kartik: { target: 75, holidayMode: false },
-          tara: { target: 75, holidayMode: false }
+          KJ: { target: 75, holidayMode: false },
+          Taaraa: { target: 75, holidayMode: false }
         };
         await setDoc(doc(db, "attendance", "shared"), data);
         render();
       }
     }, 
     (error) => {
-      // This runs if your Firebase Rules are blocking access
       console.error("Firebase Error: ", error);
       document.getElementById("content").innerHTML = `
         <div class="h-full flex flex-col items-center justify-center p-6 text-center">
           <i class="fa-solid fa-triangle-exclamation text-4xl text-rose-500 mb-4"></i>
           <h3 class="text-lg font-black text-stone-800 dark:text-white mb-2">Database Error</h3>
           <p class="text-sm text-stone-500 mb-4">${error.message}</p>
-          <p class="text-[10px] font-bold text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-200">
-            Fix: Go to Firebase Console > Firestore Database > Rules.<br>Set them to allow read/write.
-          </p>
         </div>`;
     }
   );
 }
 load();
 
-load();
+
 </script>
 </body>
 </html>
