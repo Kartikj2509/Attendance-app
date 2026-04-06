@@ -62,6 +62,7 @@
 </head>
 
 <body class="flex justify-center h-screen overflow-hidden selection:bg-amber-500/30 antialiased relative">
+<div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 w-[90%] max-w-xs pointer-events-none"></div>
 
   <div class="w-full max-w-md h-full flex flex-col relative dark:bg-slate-900/50 shadow-2xl ring-1 ring-beige-200 dark:ring-white/5 transition-all">
     
@@ -199,6 +200,38 @@ window.saveSettings = async function() {
   closeSettings();
   await setDoc(doc(db, "attendance", "shared"), data);
 }
+// --- Toast Notification Logic ---
+window.showToast = function(msg, type) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  
+  // Set colors and icons based on the action
+  let colors = "bg-stone-800 text-white";
+  let icon = "fa-check-circle";
+  
+  if (type === 'present') { colors = "bg-emerald-500 text-white shadow-emerald-500/20"; icon = "fa-check"; }
+  else if (type === 'bunk') { colors = "bg-rose-500 text-white shadow-rose-500/20"; icon = "fa-xmark"; }
+  else if (type === 'cancelled') { colors = "bg-stone-500 text-white shadow-stone-500/20"; icon = "fa-ban"; }
+  else if (type === 'undo') { colors = "bg-amber-500 text-white shadow-amber-500/20"; icon = "fa-rotate-left"; }
+
+  toast.className = `flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl transition-all duration-300 transform -translate-y-10 opacity-0 ${colors}`;
+  toast.innerHTML = `<i class="fa-solid ${icon}"></i><span class="text-sm font-bold tracking-wide">${msg}</span>`;
+  
+  container.appendChild(toast);
+  
+  // Animate sliding in
+  requestAnimationFrame(() => {
+    toast.classList.remove('-translate-y-10', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+  });
+
+  // Animate sliding out and remove after 2.5 seconds
+  setTimeout(() => {
+    toast.classList.remove('translate-y-0', 'opacity-100');
+    toast.classList.add('-translate-y-10', 'opacity-0');
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+};
 
 window.mark = async function(sub, type) {
   let d = data[currentUser][sub] || {p: 0, t: 0, history: []};
@@ -206,15 +239,27 @@ window.mark = async function(sub, type) {
   d.history.push({ type, date: Date.now() });
   data[currentUser][sub] = d;
   await setDoc(doc(db, "attendance", "shared"), data);
+  
+  // Trigger the visual confirmation
+  let text = type === 'present' ? 'Marked Present' : type === 'bunk' ? 'Marked Bunk' : 'Class Cancelled';
+  showToast(`${sub}: ${text}`, type);
 }
 
 window.undo = async function(sub) {
   let d = data[currentUser][sub];
-  if(!d || !d.history.length) return;
+  if(!d || !d.history.length) {
+    showToast("Nothing to undo here!", "undo");
+    return;
+  }
   let last = d.history.pop();
   if(last.type === "present") { d.p--; d.t--; } else if(last.type === "bunk") { d.t--; }
   await setDoc(doc(db, "attendance", "shared"), data);
+  
+  // Trigger the visual confirmation
+  showToast(`Undid last action for ${sub}`, 'undo');
 }
+
+
 window.deleteEntry = async function(sub, timestamp) {
   if (!confirm("Are you sure you want to delete this entry?")) return;
   let d = data[currentUser][sub];
