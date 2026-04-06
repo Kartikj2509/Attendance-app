@@ -235,6 +235,10 @@ window.showToast = function(msg, type) {
 
 window.mark = async function(sub, type) {
   let d = data[currentUser][sub] || {p: 0, t: 0, history: []};
+  
+  // BULLETPROOF CHECK: If the subject exists but has no history array, create one
+  if (!d.history) d.history = [];
+  
   if(type !== "cancelled") { d.t++; if(type === "present") d.p++; }
   d.history.push({ type, date: Date.now() });
   data[currentUser][sub] = d;
@@ -247,10 +251,13 @@ window.mark = async function(sub, type) {
 
 window.undo = async function(sub) {
   let d = data[currentUser][sub];
-  if(!d || !d.history.length) {
+  
+  // BULLETPROOF CHECK: Ensure there is actually history to undo
+  if(!d || !d.history || d.history.length === 0) {
     showToast("Nothing to undo here!", "undo");
     return;
   }
+  
   let last = d.history.pop();
   if(last.type === "present") { d.p--; d.t--; } else if(last.type === "bunk") { d.t--; }
   await setDoc(doc(db, "attendance", "shared"), data);
@@ -259,10 +266,13 @@ window.undo = async function(sub) {
   showToast(`Undid last action for ${sub}`, 'undo');
 }
 
-
 window.deleteEntry = async function(sub, timestamp) {
   if (!confirm("Are you sure you want to delete this entry?")) return;
   let d = data[currentUser][sub];
+  
+  // BULLETPROOF CHECK
+  if (!d || !d.history) return;
+  
   let index = d.history.findIndex(h => h.date === timestamp);
   if (index > -1) {
     let item = d.history[index];
@@ -272,6 +282,7 @@ window.deleteEntry = async function(sub, timestamp) {
     await setDoc(doc(db, "attendance", "shared"), data);
   }
 };
+
 
 window.requestNotifications = function() {
   if ("Notification" in window) {
