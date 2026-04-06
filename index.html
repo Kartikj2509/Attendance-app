@@ -351,6 +351,20 @@ function calculateStats(userObj) {
       (userObj[k].history || []).forEach(h => allHist.push({...h, sub: k}));
     }
   });
+  
+  // FIX: Bulletproof time-based sorting
+  allHist.sort((a, b) => {
+    // This forces any weird dates into valid numbers, and defaults to 0 if totally broken
+    const timeA = new Date(a.date).getTime() || 0;
+    const timeB = new Date(b.date).getTime() || 0;
+    return timeB - timeA; // Pushes the highest (newest) number to the top
+  });
+  
+  let streak = 0;
+  for(let item of allHist) { if(item.type === 'present') streak++; else if(item.type === 'bunk') break; }
+  return { p, t, percent: t === 0 ? "0.00" : ((p/t)*100).toFixed(2), streak, history: allHist };
+}
+
   allHist.sort((a,b) => b.date - a.date);
   let streak = 0;
   for(let item of allHist) { if(item.type === 'present') streak++; else if(item.type === 'bunk') break; }
