@@ -350,8 +350,7 @@ function calculateStats(userObj) {
       p += userObj[k].p; t += userObj[k].t;
       (userObj[k].history || []).forEach(h => allHist.push({...h, sub: k}));
     }
-  });
-  
+
   // FIX: Bulletproof time-based sorting
   allHist.sort((a, b) => {
     // This forces any weird dates into valid numbers, and defaults to 0 if totally broken
