@@ -345,23 +345,33 @@ window.simForecast = function(type) {
 /* Rendering Engine */
 function calculateStats(userObj) {
   let p = 0, t = 0, allHist = [];
+  
   Object.keys(userObj).forEach(k => {
     if(!['target', 'holidayMode', 'targets', 'nudge', 'lastArrival', 'campusLat', 'campusLng'].includes(k)) {
-      p += userObj[k].p; t += userObj[k].t;
-      (userObj[k].history || []).forEach(h => allHist.push({...h, sub: k}));
+      p += userObj[k].p; 
+      t += userObj[k].t;
+      
+      // THE FIX: Filter out invalid history items before pushing them
+      const rawHistory = userObj[k].history || [];
+      const validHistory = rawHistory.filter(h => h && h.type && h.date); 
+      
+      validHistory.forEach(h => allHist.push({...h, sub: k}));
     }
   });
   
-  // FIX: Bulletproof time-based sorting
+  // FIX: Bulletproof time-based sorting (from previous update)
   allHist.sort((a, b) => {
-    // This forces any weird dates into valid numbers, and defaults to 0 if totally broken
     const timeA = new Date(a.date).getTime() || 0;
     const timeB = new Date(b.date).getTime() || 0;
-    return timeB - timeA; // Pushes the highest (newest) number to the top
+    return timeB - timeA; 
   });
   
   let streak = 0;
-  for(let item of allHist) { if(item.type === 'present') streak++; else if(item.type === 'bunk') break; }
+  for(let item of allHist) { 
+    if(item.type === 'present') streak++; 
+    else if(item.type === 'bunk') break; 
+  }
+  
   return { p, t, percent: t === 0 ? "0.00" : ((p/t)*100).toFixed(2), streak, history: allHist };
 }
 
