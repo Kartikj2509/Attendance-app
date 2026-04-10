@@ -441,23 +441,16 @@ function calculateStats(userObj) {
   
   Object.keys(userObj).forEach(k => {
     if(!['target', 'holidayMode', 'targets', 'nudge', 'lastArrival', 'campusLat', 'campusLng'].includes(k)) {
-      
-      // THE FIX: Safely add to total even if p or t are missing in the database
       p += Number(userObj[k].p) || 0; 
       t += Number(userObj[k].t) || 0;
       
       const rawHistory = userObj[k].history || [];
       const validHistory = rawHistory.filter(h => h && h.type && h.date); 
-      
       validHistory.forEach(h => allHist.push({...h, sub: k}));
     }
   });
   
-  allHist.sort((a, b) => {
-    const timeA = new Date(a.date).getTime() || 0;
-    const timeB = new Date(b.date).getTime() || 0;
-    return timeB - timeA; 
-  });
+  allHist.sort((a, b) => (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0));
   
   let streak = 0;
   for(let item of allHist) { 
@@ -468,22 +461,6 @@ function calculateStats(userObj) {
   return { p, t, percent: t === 0 ? "0.00" : ((p/t)*100).toFixed(2), streak, history: allHist };
 }
 
-  
-  // FIX: Bulletproof time-based sorting (from previous update)
-  allHist.sort((a, b) => {
-    const timeA = new Date(a.date).getTime() || 0;
-    const timeB = new Date(b.date).getTime() || 0;
-    return timeB - timeA; 
-  });
-  
-  let streak = 0;
-  for(let item of allHist) { 
-    if(item.type === 'present') streak++; 
-    else if(item.type === 'bunk') break; 
-  }
-  
-  return { p, t, percent: t === 0 ? "0.00" : ((p/t)*100).toFixed(2), streak, history: allHist };
-}
 
 function renderChart(stats) {
   if (myChart) myChart.destroy();
