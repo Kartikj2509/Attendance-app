@@ -436,13 +436,21 @@ window.deleteEntry = async function(sub, timestamp) {
   }
 };
 
+// Replace your existing calculateStats function with this one:
 function calculateStats(userObj) {
   let p = 0, t = 0, allHist = [];
   
+  if (!userObj) return { p: 0, t: 0, percent: "0.00", streak: 0, history: [] };
+
   Object.keys(userObj).forEach(k => {
+    // Skip metadata fields
     if(!['target', 'holidayMode', 'targets', 'nudge', 'lastArrival', 'campusLat', 'campusLng'].includes(k)) {
-      p += Number(userObj[k].p) || 0; 
-      t += Number(userObj[k].t) || 0;
+      // FORCE conversion to Number to prevent 0% errors
+      const subjectP = Number(userObj[k].p) || 0;
+      const subjectT = Number(userObj[k].t) || 0;
+      
+      p += subjectP; 
+      t += subjectT;
       
       const rawHistory = userObj[k].history || [];
       const validHistory = rawHistory.filter(h => h && h.type && h.date); 
@@ -458,8 +466,35 @@ function calculateStats(userObj) {
     else if(item.type === 'bunk') break; 
   }
   
-  return { p, t, percent: t === 0 ? "0.00" : ((p/t)*100).toFixed(2), streak, history: allHist };
+  // Final safety check for Division by Zero
+  const percentCalculation = t > 0 ? ((p / t) * 100).toFixed(2) : "0.00";
+  
+  return { p, t, percent: percentCalculation, streak, history: allHist };
 }
+
+// Also, ensure your 'mark' function forces numbers:
+window.mark = async function(sub, type) {
+  let d = data[currentUser][sub] || {p: 0, t: 0, history: []};
+  
+  // Sanitize existing data
+  d.p = Number(d.p) || 0;
+  d.t = Number(d.t) || 0;
+  if (!d.history) d.history = [];
+  
+  if(type !== "cancelled") { 
+    d.t++; 
+    if(type === "present") d.p++; 
+  }
+  
+  d.history.push({ type, date: Date.now() });
+  data[currentUser][sub] = d;
+  
+  await setDoc(doc(db, "attendance", "shared"), data);
+  
+  let text = type === 'present' ? 'Marked Present' : type === 'bunk' ? 'Marked Bunk' : 'Class Cancelled';
+  showToast(`${sub}: ${text}`, type);
+}
+
 
 
 function renderChart(stats) {
