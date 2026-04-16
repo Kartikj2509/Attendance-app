@@ -767,25 +767,7 @@ window.recoverTaaraaData = async function() {
     return; 
   }
   
-  // Overwriting Taaraa's profile with the exact numbers from the screenshots
-  data.Taaraa = {
-    target: data.Taaraa?.target || 75,
-    holidayMode: data.Taaraa?.holidayMode || false,
-    "COD": { p: 22, t: 27, history: [] },
-    "DBMS": { p: 32, t: 36, history: [] },
-    "DBMS Lab": { p: 8, t: 9, history: [] },
-    "Java": { p: 23, t: 27, history: [] },
-    "Java Lab": { p: 9, t: 9, history: [] },
-    "ANN": { p: 24, t: 28, history: [] },
-    "ANN Lab": { p: 8, t: 8, history: [] },
-    "Life Skills": { p: 17, t: 18, history: [] }
-  };
   
-  // Save to Firebase
-  await setDoc(doc(db, "attendance", "shared"), data);
-  alert("Taaraa's Data Recovered! The page will now reload to show her stats.");
-  location.reload();
-}
 
 
 
