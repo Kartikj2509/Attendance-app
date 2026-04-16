@@ -63,6 +63,9 @@
 
 <body class="flex justify-center h-screen overflow-hidden selection:bg-amber-500/30 antialiased relative">
 <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 w-[90%] max-w-xs pointer-events-none"></div>
+<button onclick="recoverKJData()" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-rose-600 text-white font-black px-6 py-3 rounded-full shadow-2xl border-4 border-white animate-pulse">
+  🚨 CLICK TO RECOVER KJ'S DATA 🚨
+</button>
 
   <div class="w-full max-w-md h-full flex flex-col relative dark:bg-slate-900/50 shadow-2xl ring-1 ring-beige-200 dark:ring-white/5 transition-all">
     
@@ -758,6 +761,32 @@ if ('serviceWorker' in navigator) {
       .then(reg => console.log('Service Worker registered!', reg))
       .catch(err => console.log('Service Worker failed:', err));
   });
+}
+// --- ONE-TIME RECOVERY SCRIPT ---
+window.recoverKJData = async function() {
+  if(!data) { 
+    alert("Wait a second for the database to connect, then try again."); 
+    return; 
+  }
+  
+  // Overwriting KJ's profile with the exact numbers from the screenshots
+  data.KJ = {
+    target: data.KJ?.target || 75,
+    holidayMode: data.KJ?.holidayMode || false,
+    "COD": { p: 23, t: 29, history: [] },
+    "DBMS": { p: 31, t: 37, history: [] },
+    "DBMS Lab": { p: 9, t: 10, history: [] },
+    "Java": { p: 25, t: 29, history: [] },
+    "Java Lab": { p: 9, t: 9, history: [] },
+    "ANN": { p: 23, t: 29, history: [] },
+    "ANN Lab": { p: 7, t: 8, history: [] },
+    "Life Skills": { p: 18, t: 19, history: [] }
+  };
+  
+  // Save to Firebase
+  await setDoc(doc(db, "attendance", "shared"), data);
+  alert("KJ's Data Recovered! The page will now reload to show your stats.");
+  location.reload();
 }
 
 
