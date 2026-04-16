@@ -46,7 +46,6 @@
     .btn-active:active { transform: scale(0.95); }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
     
-    /* Bento Settings Styling */
     .settings-group { background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 16px; margin-bottom: 16px; }
     html.dark .settings-group { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); }
     
@@ -62,8 +61,17 @@
 </head>
 
 <body class="flex justify-center h-screen overflow-hidden selection:bg-amber-500/30 antialiased relative">
-<div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 w-[90%] max-w-xs pointer-events-none"></div>
+  
+  <div class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 w-[90%] max-w-xs">
+    <button onclick="recoverKJData()" class="bg-rose-600 text-white font-black px-6 py-3 rounded-full shadow-2xl border-2 border-white animate-pulse">
+      🚨 RECOVER KJ 🚨
+    </button>
+    <button onclick="recoverTaaraaData()" class="bg-indigo-600 text-white font-black px-6 py-3 rounded-full shadow-2xl border-2 border-white animate-pulse">
+      🚨 RECOVER TAARAA 🚨
+    </button>
+  </div>
 
+  <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 w-[90%] max-w-xs pointer-events-none"></div>
 
   <div class="w-full max-w-md h-full flex flex-col relative dark:bg-slate-900/50 shadow-2xl ring-1 ring-beige-200 dark:ring-white/5 transition-all">
     
@@ -148,7 +156,10 @@
         <div class="w-full bg-beige-200 rounded-full h-2 mb-2 overflow-hidden"><div id="fc-bar" class="h-full bg-indigo-500 transition-all"></div></div>
         <p id="fc-fraction" class="text-[10px] text-stone-400 font-bold uppercase">0 / 0 Classes</p>
       </div>
-      <div class="grid grid-cols-2 gap-3"><button onclick="simForecast('present')" class="btn-active bg-emerald-50 text-emerald-600 py-3 rounded-xl font-bold">Present</button><button onclick="simForecast('bunk')" class="btn-active bg-rose-50 text-rose-600 py-3 rounded-xl font-bold">Bunk</button></div>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="simForecast('present')" class="btn-active bg-emerald-50 text-emerald-600 py-3 rounded-xl font-bold">Present</button>
+        <button onclick="simForecast('bunk')" class="btn-active bg-rose-50 text-rose-600 py-3 rounded-xl font-bold">Bunk</button>
+      </div>
     </div>
   </div>
 
@@ -173,9 +184,20 @@ const timetable = {
 };
 const allSubjects = [...new Set(Object.values(timetable).flat().map(i => i.sub))];
 
-window.switchUser = function() { currentUser = currentUser === "KJ" ? "Taaraa" : "KJ"; render(); }
-window.switchTab = function(tab) { currentTab = tab; render(); }
-window.toggleTheme = function() { document.documentElement.classList.toggle('dark'); }
+window.switchUser = function() { 
+  currentUser = currentUser === "KJ" ? "Taaraa" : "KJ"; 
+  render(); 
+}
+
+window.switchTab = function(tab) { 
+  currentTab = tab; 
+  render(); 
+}
+
+window.toggleTheme = function() { 
+  document.documentElement.classList.toggle('dark'); 
+}
+
 window.openSettings = function() { 
   document.getElementById('target-slider').value = data[currentUser].target || 75;
   document.getElementById('target-display').innerText = (data[currentUser].target || 75) + '%';
@@ -185,28 +207,41 @@ window.openSettings = function() {
   let subHtml = "";
   allSubjects.forEach(sub => {
     let val = data[currentUser].targets?.[sub] || data[currentUser].target || 75;
-    subHtml += `<div class="flex justify-between items-center bg-white/50 dark:bg-white/5 px-3 py-2 rounded-xl border border-beige-200 dark:border-white/10"><span class="text-[10px] font-black text-stone-700 dark:text-stone-400 uppercase tracking-wider">${sub}</span><div class="flex items-center gap-1"><input type="number" id="target-${sub.replace(/\s+/g, '')}" value="${val}" class="w-10 text-center bg-transparent text-sm font-black text-amber-700 focus:outline-none"><span class="text-[10px] text-stone-400">%</span></div></div>`;
+    subHtml += `
+      <div class="flex justify-between items-center bg-white/50 dark:bg-white/5 px-3 py-2 rounded-xl border border-beige-200 dark:border-white/10">
+        <span class="text-[10px] font-black text-stone-700 dark:text-stone-400 uppercase tracking-wider">${sub}</span>
+        <div class="flex items-center gap-1">
+          <input type="number" id="target-${sub.replace(/\s+/g, '')}" value="${val}" class="w-10 text-center bg-transparent text-sm font-black text-amber-700 focus:outline-none">
+          <span class="text-[10px] text-stone-400">%</span>
+        </div>
+      </div>`;
   });
   document.getElementById('subject-targets-container').innerHTML = subHtml;
   document.getElementById('settings-modal').classList.remove('hidden'); 
 }
-window.closeSettings = function() { document.getElementById('settings-modal').classList.add('hidden'); }
+
+window.closeSettings = function() { 
+  document.getElementById('settings-modal').classList.add('hidden'); 
+}
+
 window.saveSettings = async function() {
   data[currentUser].target = parseInt(document.getElementById('target-slider').value);
   data[currentUser].holidayMode = document.getElementById('holiday-toggle').checked;
   if(!data[currentUser].targets) data[currentUser].targets = {};
-  allSubjects.forEach(sub => {
-    data[currentUser].targets[sub] = parseInt(document.getElementById(`target-${sub.replace(/\s+/g, '')}`).value) || data[currentUser].target;
+  
+  allSubjects.forEach(sub => { 
+    data[currentUser].targets[sub] = parseInt(document.getElementById(`target-${sub.replace(/\s+/g, '')}`).value) || data[currentUser].target; 
   });
+  
   closeSettings();
   await setDoc(doc(db, "attendance", "shared"), data);
 }
-// --- Toast Notification Logic ---
+
+// --- Toast Logic ---
 window.showToast = function(msg, type) {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   
-  // Set colors and icons based on the action
   let colors = "bg-stone-800 text-white";
   let icon = "fa-check-circle";
   
@@ -220,13 +255,11 @@ window.showToast = function(msg, type) {
   
   container.appendChild(toast);
   
-  // Animate sliding in
   requestAnimationFrame(() => {
     toast.classList.remove('-translate-y-10', 'opacity-0');
     toast.classList.add('translate-y-0', 'opacity-100');
   });
 
-  // Animate sliding out and remove after 2.5 seconds
   setTimeout(() => {
     toast.classList.remove('translate-y-0', 'opacity-100');
     toast.classList.add('-translate-y-10', 'opacity-0');
@@ -234,16 +267,19 @@ window.showToast = function(msg, type) {
   }, 2500);
 };
 
+// --- Database Logic ---
 window.mark = async function(sub, type) {
   let d = data[currentUser][sub] || {p: 0, t: 0, history: []};
   
-  // THE FIX: Guarantee p and t are valid numbers, even for older database entries
   d.p = Number(d.p) || 0;
   d.t = Number(d.t) || 0;
-  
   if (!d.history) d.history = [];
   
-  if(type !== "cancelled") { d.t++; if(type === "present") d.p++; }
+  if(type !== "cancelled") { 
+    d.t++; 
+    if(type === "present") d.p++; 
+  }
+  
   d.history.push({ type, date: Date.now() });
   data[currentUser][sub] = d;
   
@@ -261,13 +297,11 @@ window.undo = async function(sub) {
     return;
   }
   
-  // THE FIX: Prevent NaN during undo operations
   d.p = Number(d.p) || 0;
   d.t = Number(d.t) || 0;
   
   let last = d.history.pop();
   
-  // Use Math.max to prevent counts from ever dropping below 0
   if(last.type === "present") { 
     d.p = Math.max(0, d.p - 1); 
     d.t = Math.max(0, d.t - 1); 
@@ -285,7 +319,6 @@ window.deleteEntry = async function(sub, timestamp) {
   
   if (!d || !d.history) return;
   
-  // THE FIX: Prevent NaN during deletes
   d.p = Number(d.p) || 0;
   d.t = Number(d.t) || 0;
   
@@ -304,10 +337,7 @@ window.deleteEntry = async function(sub, timestamp) {
   }
 };
 
-
-
-
-
+// --- Notifications & APIs ---
 window.requestNotifications = function() {
   if ("Notification" in window) {
     Notification.requestPermission().then(permission => {
@@ -341,8 +371,10 @@ window.sendNudge = function() {
 window.openForecast = function(sub) {
   fcSub = sub;
   let d = data[currentUser][sub] || {p: 0, t: 0};
-  fcP = d.p; fcT = d.t;
+  fcP = d.p; 
+  fcT = d.t;
   fcTarget = data[currentUser].targets?.[sub] || data[currentUser].target || 75;
+  
   document.getElementById('fc-subject').innerText = sub;
   updateForecastUI();
   document.getElementById('forecast-modal').classList.remove('hidden');
@@ -366,87 +398,14 @@ window.simForecast = function(type) {
   updateForecastUI();
 };
 
-/* Rendering Engine */
-window.mark = async function(sub, type) {
-  let d = data[currentUser][sub] || {p: 0, t: 0, history: []};
-  
-  // THE FIX: Guarantee p and t are valid numbers, even for older database entries
-  d.p = Number(d.p) || 0;
-  d.t = Number(d.t) || 0;
-  
-  if (!d.history) d.history = [];
-  
-  if(type !== "cancelled") { d.t++; if(type === "present") d.p++; }
-  d.history.push({ type, date: Date.now() });
-  data[currentUser][sub] = d;
-  
-  await setDoc(doc(db, "attendance", "shared"), data);
-  
-  let text = type === 'present' ? 'Marked Present' : type === 'bunk' ? 'Marked Bunk' : 'Class Cancelled';
-  showToast(`${sub}: ${text}`, type);
-}
-
-window.undo = async function(sub) {
-  let d = data[currentUser][sub];
-  
-  if(!d || !d.history || d.history.length === 0) {
-    showToast("Nothing to undo here!", "undo");
-    return;
-  }
-  
-  // THE FIX: Prevent NaN during undo operations
-  d.p = Number(d.p) || 0;
-  d.t = Number(d.t) || 0;
-  
-  let last = d.history.pop();
-  
-  // Use Math.max to prevent counts from ever dropping below 0
-  if(last.type === "present") { 
-    d.p = Math.max(0, d.p - 1); 
-    d.t = Math.max(0, d.t - 1); 
-  } else if(last.type === "bunk") { 
-    d.t = Math.max(0, d.t - 1); 
-  }
-  
-  await setDoc(doc(db, "attendance", "shared"), data);
-  showToast(`Undid last action for ${sub}`, 'undo');
-}
-
-window.deleteEntry = async function(sub, timestamp) {
-  if (!confirm("Are you sure you want to delete this entry?")) return;
-  let d = data[currentUser][sub];
-  
-  if (!d || !d.history) return;
-  
-  // THE FIX: Prevent NaN during deletes
-  d.p = Number(d.p) || 0;
-  d.t = Number(d.t) || 0;
-  
-  let index = d.history.findIndex(h => h.date === timestamp);
-  if (index > -1) {
-    let item = d.history[index];
-    if (item.type === "present") { 
-        d.p = Math.max(0, d.p - 1); 
-        d.t = Math.max(0, d.t - 1); 
-    } else if (item.type === "bunk") { 
-        d.t = Math.max(0, d.t - 1); 
-    }
-    
-    d.history.splice(index, 1);
-    await setDoc(doc(db, "attendance", "shared"), data);
-  }
-};
-
-// Replace your existing calculateStats function with this one:
+// --- Rendering Engine ---
 function calculateStats(userObj) {
   let p = 0, t = 0, allHist = [];
   
   if (!userObj) return { p: 0, t: 0, percent: "0.00", streak: 0, history: [] };
 
   Object.keys(userObj).forEach(k => {
-    // Skip metadata fields
     if(!['target', 'holidayMode', 'targets', 'nudge', 'lastArrival', 'campusLat', 'campusLng'].includes(k)) {
-      // FORCE conversion to Number to prevent 0% errors
       const subjectP = Number(userObj[k].p) || 0;
       const subjectT = Number(userObj[k].t) || 0;
       
@@ -467,36 +426,9 @@ function calculateStats(userObj) {
     else if(item.type === 'bunk') break; 
   }
   
-  // Final safety check for Division by Zero
   const percentCalculation = t > 0 ? ((p / t) * 100).toFixed(2) : "0.00";
-  
   return { p, t, percent: percentCalculation, streak, history: allHist };
 }
-
-// Also, ensure your 'mark' function forces numbers:
-window.mark = async function(sub, type) {
-  let d = data[currentUser][sub] || {p: 0, t: 0, history: []};
-  
-  // Sanitize existing data
-  d.p = Number(d.p) || 0;
-  d.t = Number(d.t) || 0;
-  if (!d.history) d.history = [];
-  
-  if(type !== "cancelled") { 
-    d.t++; 
-    if(type === "present") d.p++; 
-  }
-  
-  d.history.push({ type, date: Date.now() });
-  data[currentUser][sub] = d;
-  
-  await setDoc(doc(db, "attendance", "shared"), data);
-  
-  let text = type === 'present' ? 'Marked Present' : type === 'bunk' ? 'Marked Bunk' : 'Class Cancelled';
-  showToast(`${sub}: ${text}`, type);
-}
-
-
 
 function renderChart(stats) {
   if (myChart) myChart.destroy();
@@ -510,261 +442,318 @@ function renderChart(stats) {
 }
 
 function render() {
-  if(!data) return;
-  const stats = calculateStats(data[currentUser]);
-  const partner = currentUser === "KJ" ? "Taaraa" : "KJ";
-  const partnerStats = calculateStats(data[partner]);
-  const isWinning = parseFloat(stats.percent) > parseFloat(partnerStats.percent);
-  const targetNum = data[currentUser].target || 75;
+  try {
+    if(!data) return;
 
-  document.getElementById("name").innerText = currentUser;
-  document.getElementById("overall").innerText = `${stats.percent}%`;
-  document.getElementById("streak-count").innerText = `${stats.streak} Streak`;
-  document.getElementById("streak-badge").style.display = stats.streak > 0 ? "flex" : "none";
-  
-  let c = document.getElementById("content");
-  c.innerHTML = "";
-  // Update Navigation Active States
-  const tabs = ['today', 'tracker', 'history', 'timetable'];
-  tabs.forEach(t => {
-    const el = document.getElementById(`tab-${t}`);
-    if (el) {
-      if (t === currentTab) {
-        el.className = "btn-active flex flex-col items-center gap-1 text-amber-700 w-14";
-      } else {
-        el.className = "btn-active flex flex-col items-center gap-1 text-stone-400 w-14";
-      }
-    }
-  });
+    // Safety net in case profiles don't exist
+    if (!data.KJ) data.KJ = { target: 75, holidayMode: false };
+    if (!data.Taaraa) data.Taaraa = { target: 75, holidayMode: false };
 
-      if(currentTab === 'today') {
-    const day = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
-    const todayClasses = timetable[day] || [];
-    const isHoliday = data[currentUser].holidayMode; 
+    const stats = calculateStats(data[currentUser]);
+    const partner = currentUser === "KJ" ? "Taaraa" : "KJ";
+    const partnerStats = calculateStats(data[partner]);
+    const isWinning = parseFloat(stats.percent) > parseFloat(partnerStats.percent);
+    const targetNum = data[currentUser].target || 75;
 
-    c.innerHTML = `<h2 class="text-2xl font-black mb-4">Your Day</h2>`;
+    document.getElementById("name").innerText = currentUser;
+    document.getElementById("overall").innerText = `${stats.percent}%`;
+    document.getElementById("streak-count").innerText = `${stats.streak} Streak`;
+    document.getElementById("streak-badge").style.display = stats.streak > 0 ? "flex" : "none";
+    
+    let c = document.getElementById("content");
+    c.innerHTML = "";
 
-    if (isHoliday) {
-      // Show Holiday Mode UI
-      c.innerHTML += `
-        <div class="glass-card rounded-3xl p-8 text-center animate-slide-up mt-10">
-          <div class="w-20 h-20 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fa-solid fa-umbrella-beach text-3xl text-rose-500"></i>
-          </div>
-          <h3 class="text-xl font-black text-stone-800 dark:text-white mb-2">Holiday Mode</h3>
-          <p class="text-sm text-stone-500 dark:text-slate-400 font-medium">Kick back and relax. Your attendance is paused.</p>
-        </div>`;
-    } else if (todayClasses.length === 0) {
-      // Show No Classes UI (e.g., Sunday)
-      c.innerHTML += `
-        <div class="glass-card rounded-3xl p-8 text-center animate-slide-up mt-10">
-          <div class="w-20 h-20 bg-emerald-100 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fa-solid fa-mug-hot text-3xl text-emerald-500"></i>
-          </div>
-          <h3 class="text-xl font-black text-stone-800 dark:text-white mb-2">It's a Free Day!</h3>
-          <p class="text-sm text-stone-500 dark:text-slate-400 font-medium">Enjoy your ${day}. You have no classes scheduled.</p>
-        </div>`;
-    } else {
-      // --- NEW LOGIC: Filter out classes that have already been marked today ---
-      const todayString = new Date().toDateString();
-      const pendingClasses = todayClasses.filter(i => {
-        let d = data[currentUser][i.sub];
-        if (!d || !d.history) return true; // If there's no history at all, keep the class
-        
-        // Check if there is ANY history entry matching today's date
-        let markedToday = d.history.some(h => new Date(h.date).toDateString() === todayString);
-        
-        return !markedToday; // Keep the class ONLY if it hasn't been marked today
-      });
-
-      if (pendingClasses.length === 0) {
-        // Show "All Done" UI when the pending list is empty!
-        c.innerHTML += `
-          <div class="glass-card rounded-3xl p-8 text-center animate-slide-up mt-10 border border-indigo-200 dark:border-indigo-500/30">
-            <div class="w-20 h-20 bg-indigo-100 dark:bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i class="fa-solid fa-check-double text-3xl text-indigo-500"></i>
-            </div>
-            <h3 class="text-xl font-black text-stone-800 dark:text-white mb-2">All Done!</h3>
-            <p class="text-sm text-stone-500 dark:text-slate-400 font-medium">You've marked all your classes for today. Enjoy the rest of your day!</p>
-          </div>`;
-      } else {
-        // Show the remaining unmarked classes
-        pendingClasses.forEach(i => {
-          let d = data[currentUser][i.sub] || {p:0, t:0};
-          c.innerHTML += `<div class="glass-card rounded-3xl p-5 mb-4 animate-slide-up">
-            <div class="flex justify-between mb-4"><div><h3 class="text-xl font-bold">${i.sub}</h3><p class="text-stone-500 text-sm font-medium mt-1">${i.time} • ${i.room}</p></div><div class="text-xs font-black text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">${d.t ? ((d.p/d.t)*100).toFixed(0) : 0}%</div></div>
-            <div class="grid grid-cols-4 gap-2">
-              <button onclick="mark('${i.sub}','present')" class="btn-active bg-emerald-50 text-emerald-600 py-3 rounded-xl"><i class="fa-solid fa-check"></i></button>
-              <button onclick="mark('${i.sub}','bunk')" class="btn-active bg-rose-50 text-rose-600 py-3 rounded-xl"><i class="fa-solid fa-xmark"></i></button>
-              <button onclick="mark('${i.sub}','cancelled')" class="btn-active bg-stone-100 text-stone-500 py-3 rounded-xl"><i class="fa-solid fa-ban"></i></button>
-              <button onclick="undo('${i.sub}')" class="btn-active bg-white text-stone-300 py-3 rounded-xl border border-beige-200"><i class="fa-solid fa-rotate-left"></i></button>
-            </div>
-          </div>`;
-        });
-      }
-    }
-  }
-
-
-  if(currentTab === 'tracker') {
-    c.innerHTML = `<div class="glass-card rounded-2xl p-4 mb-6 flex justify-between items-center animate-slide-up">
-      <div class="flex items-center gap-3">
-        <div class="relative"><div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-black border border-white">${partner[0].toUpperCase()}</div>${!isWinning ? '<i class="fa-solid fa-crown absolute -top-3 -left-2 text-amber-500 text-base rotate-[-20deg]"></i>' : ''}</div>
-        <div><p class="text-[10px] text-stone-500 uppercase font-black tracking-widest">${partner}'s Status</p><p class="text-base font-black">${partnerStats.percent}%</p></div>
-      </div>
-      <div class="flex items-center gap-2">${isWinning ? '<span class="text-[9px] font-black text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full uppercase">You Lead!</span>' : ''}<button onclick="sendNudge()" class="bg-amber-200 text-amber-800 w-9 h-9 rounded-full flex items-center justify-center shadow-lg"><i class="fa-solid fa-bell animate-swing"></i></button></div>
-    </div>
-    <div class="glass-card rounded-3xl p-5 mb-6 flex items-center justify-between animate-slide-up">
-      <div class="w-20 h-20 relative"><canvas id="attendanceChart"></canvas></div>
-      <div class="flex-1 pl-6"><p class="text-[10px] text-stone-400 uppercase font-black tracking-widest mb-1">Target: ${targetNum}%</p><p class="text-sm font-bold"><span class="text-emerald-500">${stats.p}</span> Present / <span class="text-rose-500">${stats.t - stats.p}</span> Bunked</p></div>
-    </div>`;
-    setTimeout(() => renderChart(stats), 50);
-
-    allSubjects.forEach(sub => {
-      let d = data[currentUser][sub] || {p: 0, t: 0};
-      let per = d.t ? ((d.p/d.t)*100).toFixed(1) : 0;
-      let bunkText = "", bunkColor = "";
-      if (parseFloat(per) >= targetNum) {
-        let safe = Math.floor((d.p * 100 / targetNum) - d.t);
-        bunkText = safe > 0 ? `✅ Safe to bunk: ${safe}` : `⚡ On the edge`;
-        bunkColor = "text-emerald-600";
-      } else {
-        let req = Math.ceil((targetNum * d.t - 100 * d.p) / (100 - targetNum));
-        bunkText = `⚠️ Attend next: ${req}`;
-        bunkColor = "text-rose-500";
-      }
-      c.innerHTML += `<div class="glass-card rounded-3xl p-5 mb-4 animate-slide-up relative overflow-hidden">
-        <div class="flex justify-between items-start mb-2">
-          <div><h3 class="text-lg font-bold">${sub}</h3><span class="text-[10px] font-black ${bunkColor} uppercase px-2 py-0.5 bg-white/50 rounded-full border border-current/10">${bunkText}</span></div>
-          <div class="text-right"><div class="text-2xl font-black ${parseFloat(per) < targetNum ? 'text-rose-500' : 'text-emerald-500'}">${per}%</div><button onclick="openForecast('${sub}')" class="text-indigo-600 text-[10px] font-black mt-2 tracking-widest uppercase"><i class="fa-solid fa-crystal-ball"></i> Forecast</button></div>
-        </div>
-        <div class="w-full bg-beige-200 rounded-full h-2.5 mb-2 overflow-hidden relative"><div class="target-marker" style="left: ${targetNum}%"></div><div class="h-full rounded-full ${parseFloat(per) < targetNum ? 'bg-rose-500' : 'bg-emerald-500'}" style="width: ${per}%"></div></div>
-        <div class="flex justify-between text-[10px] font-black text-stone-400 uppercase tracking-widest"><span>Target: ${targetNum}%</span><span>${d.p} / ${d.t} Classes</span></div>
-      </div>`;
-    });
-  }
-
-     if(currentTab === 'history') {
-        let delay = 0;
-        // 1. Create a string variable to hold our HTML instead of hitting the DOM directly
-        let htmlString = `<h2 class="text-xl font-black text-stone-800 dark:text-white mb-4 mt-2">Recent Activity</h2>`;
-        
-        if(stats.history.length === 0) { 
-          htmlString += `<div class="text-center text-stone-500 dark:text-slate-500 font-medium mt-10">No history yet.</div>`; 
-          c.innerHTML = htmlString;
-          return; 
+    // Tab Highlighting
+    const tabs = ['today', 'tracker', 'history', 'timetable'];
+    tabs.forEach(t => {
+      const el = document.getElementById(`tab-${t}`);
+      if (el) {
+        if (t === currentTab) {
+          el.className = "btn-active flex flex-col items-center gap-1 text-amber-700 w-14";
+        } else {
+          el.className = "btn-active flex flex-col items-center gap-1 text-stone-400 w-14";
         }
-        
-        stats.history.slice(0, 50).forEach(item => {
-          let dateObj = new Date(item.date);
-          let dateString = "Unknown Date"; 
-          
-          if (item.date && !isNaN(dateObj.getTime())) {
-            dateString = `${dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' })} • ${dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-          }
+      }
+    });
 
-          let icon = item.type === 'present' ? '<i class="fa-solid fa-check text-emerald-600 dark:text-emerald-400"></i>' : 
-                     item.type === 'bunk' ? '<i class="fa-solid fa-xmark text-rose-600 dark:text-rose-400"></i>' : '<i class="fa-solid fa-ban text-stone-500 dark:text-slate-400"></i>';
-          
-          // 2. Append to the string. Note: Removed 'opacity-0' from the class list.
-          htmlString += `
-            <div class="flex items-center gap-4 p-3 border-b border-beige-200/50 dark:border-white/5 animate-slide-up" style="animation-delay: ${delay}ms">
-              <div class="w-10 h-10 rounded-full bg-white/60 dark:bg-slate-800 border border-beige-200 dark:border-slate-700 flex items-center justify-center shadow-sm">${icon}</div>
-              <div class="flex-1">
-                <p class="text-stone-800 dark:text-white font-bold">${item.sub}</p>
-                <p class="text-[10px] text-stone-500 dark:text-slate-400 font-black uppercase tracking-wider">${item.type} • ${dateString}</p>
-              </div>
-              <button onclick="deleteEntry('${item.sub}', ${item.date})" class="text-stone-300 hover:text-rose-500 transition-colors"><i class="fa-solid fa-trash-can text-xs"></i></button>
+    // --- TODAY TAB ---
+    if(currentTab === 'today') {
+      const day = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
+      const todayClasses = timetable[day] || [];
+      const isHoliday = data[currentUser].holidayMode; 
+
+      c.innerHTML = `<h2 class="text-2xl font-black mb-4">Your Day</h2>`;
+
+      if (isHoliday) {
+        c.innerHTML += `
+          <div class="glass-card rounded-3xl p-8 text-center animate-slide-up mt-10">
+            <div class="w-20 h-20 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fa-solid fa-umbrella-beach text-3xl text-rose-500"></i>
             </div>
-          `;
-          delay += 20;
+            <h3 class="text-xl font-black text-stone-800 dark:text-white mb-2">Holiday Mode</h3>
+            <p class="text-sm text-stone-500 dark:text-slate-400 font-medium">Kick back and relax. Your attendance is paused.</p>
+          </div>`;
+      } else if (todayClasses.length === 0) {
+        c.innerHTML += `
+          <div class="glass-card rounded-3xl p-8 text-center animate-slide-up mt-10">
+            <div class="w-20 h-20 bg-emerald-100 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fa-solid fa-mug-hot text-3xl text-emerald-500"></i>
+            </div>
+            <h3 class="text-xl font-black text-stone-800 dark:text-white mb-2">It's a Free Day!</h3>
+            <p class="text-sm text-stone-500 dark:text-slate-400 font-medium">Enjoy your ${day}. You have no classes scheduled.</p>
+          </div>`;
+      } else {
+        const todayString = new Date().toDateString();
+        const pendingClasses = todayClasses.filter(i => {
+          let d = data[currentUser][i.sub];
+          if (!d || !d.history) return true; 
+          let markedToday = d.history.some(h => new Date(h.date).toDateString() === todayString);
+          return !markedToday; 
         });
 
-        // 3. Update the DOM exactly once at the very end
-        c.innerHTML = htmlString;
-        return;
+        if (pendingClasses.length === 0) {
+          c.innerHTML += `
+            <div class="glass-card rounded-3xl p-8 text-center animate-slide-up mt-10 border border-indigo-200 dark:border-indigo-500/30">
+              <div class="w-20 h-20 bg-indigo-100 dark:bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-check-double text-3xl text-indigo-500"></i>
+              </div>
+              <h3 class="text-xl font-black text-stone-800 dark:text-white mb-2">All Done!</h3>
+              <p class="text-sm text-stone-500 dark:text-slate-400 font-medium">You've marked all your classes for today. Enjoy the rest of your day!</p>
+            </div>`;
+        } else {
+          pendingClasses.forEach(i => {
+            let d = data[currentUser][i.sub] || {p:0, t:0};
+            c.innerHTML += `
+            <div class="glass-card rounded-3xl p-5 mb-4 animate-slide-up">
+              <div class="flex justify-between mb-4">
+                <div>
+                  <h3 class="text-xl font-bold">${i.sub}</h3>
+                  <p class="text-stone-500 text-sm font-medium mt-1">${i.time} • ${i.room}</p>
+                </div>
+                <div class="text-xs font-black text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">
+                  ${d.t ? ((d.p/d.t)*100).toFixed(0) : 0}%
+                </div>
+              </div>
+              <div class="grid grid-cols-4 gap-2">
+                <button onclick="mark('${i.sub}','present')" class="btn-active bg-emerald-50 text-emerald-600 py-3 rounded-xl"><i class="fa-solid fa-check"></i></button>
+                <button onclick="mark('${i.sub}','bunk')" class="btn-active bg-rose-50 text-rose-600 py-3 rounded-xl"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="mark('${i.sub}','cancelled')" class="btn-active bg-stone-100 text-stone-500 py-3 rounded-xl"><i class="fa-solid fa-ban"></i></button>
+                <button onclick="undo('${i.sub}')" class="btn-active bg-white text-stone-300 py-3 rounded-xl border border-beige-200"><i class="fa-solid fa-rotate-left"></i></button>
+              </div>
+            </div>`;
+          });
+        }
       }
+    }
 
-  if(currentTab === 'timetable') {
-    Object.keys(timetable).forEach(day => {
-      if(!timetable[day].length) return;
-      let html = `<div class="mb-8 animate-slide-up"><h3 class="text-amber-700 font-black uppercase text-sm tracking-widest mb-3 ml-1">${day}</h3><div class="space-y-3">`;
-      timetable[day].forEach(i => {
-        html += `<div class="glass-card rounded-2xl p-4 flex justify-between items-center"><div><b class="text-md block font-bold">${i.sub}</b><span class="text-stone-500 text-xs font-medium uppercase tracking-wider">${i.room}</span></div><span class="text-xs font-black text-amber-800 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100">${i.time}</span></div>`;
+    // --- TRACKER TAB ---
+    if(currentTab === 'tracker') {
+      c.innerHTML = `
+      <div class="glass-card rounded-2xl p-4 mb-6 flex justify-between items-center animate-slide-up">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-black border border-white">${partner[0].toUpperCase()}</div>
+            ${!isWinning ? '<i class="fa-solid fa-crown absolute -top-3 -left-2 text-amber-500 text-base rotate-[-20deg]"></i>' : ''}
+          </div>
+          <div>
+            <p class="text-[10px] text-stone-500 uppercase font-black tracking-widest">${partner}'s Status</p>
+            <p class="text-base font-black">${partnerStats.percent}%</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          ${isWinning ? '<span class="text-[9px] font-black text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full uppercase">You Lead!</span>' : ''}
+          <button onclick="sendNudge()" class="bg-amber-200 text-amber-800 w-9 h-9 rounded-full flex items-center justify-center shadow-lg"><i class="fa-solid fa-bell animate-swing"></i></button>
+        </div>
+      </div>
+      <div class="glass-card rounded-3xl p-5 mb-6 flex items-center justify-between animate-slide-up">
+        <div class="w-20 h-20 relative"><canvas id="attendanceChart"></canvas></div>
+        <div class="flex-1 pl-6">
+          <p class="text-[10px] text-stone-400 uppercase font-black tracking-widest mb-1">Target: ${targetNum}%</p>
+          <p class="text-sm font-bold"><span class="text-emerald-500">${stats.p}</span> Present / <span class="text-rose-500">${stats.t - stats.p}</span> Bunked</p>
+        </div>
+      </div>`;
+      
+      setTimeout(() => renderChart(stats), 50);
+
+      allSubjects.forEach(sub => {
+        let d = data[currentUser][sub] || {p: 0, t: 0};
+        let per = d.t ? ((d.p/d.t)*100).toFixed(1) : 0;
+        let bunkText = "", bunkColor = "";
+        
+        if (d.t === 0) {
+          bunkText = `✨ Not Started`;
+          bunkColor = "text-indigo-500";
+        } else if (parseFloat(per) >= targetNum) {
+          let safe = Math.floor((d.p * 100 / targetNum) - d.t);
+          bunkText = safe > 0 ? `✅ Safe to bunk: ${safe}` : `⚡ On the edge`;
+          bunkColor = "text-emerald-600";
+        } else {
+          let req = Math.ceil((targetNum * d.t - 100 * d.p) / (100 - targetNum));
+          bunkText = `⚠️ Attend next: ${req}`;
+          bunkColor = "text-rose-500";
+        }
+
+        c.innerHTML += `
+        <div class="glass-card rounded-3xl p-5 mb-4 animate-slide-up relative overflow-hidden">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <h3 class="text-lg font-bold">${sub}</h3>
+              <span class="text-[10px] font-black ${bunkColor} uppercase px-2 py-0.5 bg-white/50 rounded-full border border-current/10">${bunkText}</span>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-black ${parseFloat(per) < targetNum ? 'text-rose-500' : 'text-emerald-500'}">${per}%</div>
+              <button onclick="openForecast('${sub}')" class="text-indigo-600 text-[10px] font-black mt-2 tracking-widest uppercase"><i class="fa-solid fa-crystal-ball"></i> Forecast</button>
+            </div>
+          </div>
+          <div class="w-full bg-beige-200 rounded-full h-2.5 mb-2 overflow-hidden relative">
+            <div class="target-marker" style="left: ${targetNum}%"></div>
+            <div class="h-full rounded-full ${parseFloat(per) < targetNum ? 'bg-rose-500' : 'bg-emerald-500'}" style="width: ${per}%"></div>
+          </div>
+          <div class="flex justify-between text-[10px] font-black text-stone-400 uppercase tracking-widest">
+            <span>Target: ${targetNum}%</span>
+            <span>${d.p} / ${d.t} Classes</span>
+          </div>
+        </div>`;
       });
-      c.innerHTML += html + `</div></div>`;
-    });
+    }
+
+    // --- HISTORY TAB ---
+    if(currentTab === 'history') {
+      let delay = 0;
+      let htmlString = `<h2 class="text-xl font-black text-stone-800 dark:text-white mb-4 mt-2">Recent Activity</h2>`;
+      
+      if(stats.history.length === 0) { 
+        htmlString += `<div class="text-center text-stone-500 dark:text-slate-500 font-medium mt-10">No history yet.</div>`; 
+        c.innerHTML = htmlString;
+        return; 
+      }
+      
+      stats.history.slice(0, 50).forEach(item => {
+        let dateObj = new Date(item.date);
+        let dateString = "Unknown Date"; 
+        
+        if (item.date && !isNaN(dateObj.getTime())) {
+          dateString = `${dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' })} • ${dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        let icon = item.type === 'present' ? '<i class="fa-solid fa-check text-emerald-600 dark:text-emerald-400"></i>' : 
+                   item.type === 'bunk' ? '<i class="fa-solid fa-xmark text-rose-600 dark:text-rose-400"></i>' : '<i class="fa-solid fa-ban text-stone-500 dark:text-slate-400"></i>';
+        
+        htmlString += `
+          <div class="flex items-center gap-4 p-3 border-b border-beige-200/50 dark:border-white/5 animate-slide-up" style="animation-delay: ${delay}ms">
+            <div class="w-10 h-10 rounded-full bg-white/60 dark:bg-slate-800 border border-beige-200 dark:border-slate-700 flex items-center justify-center shadow-sm">${icon}</div>
+            <div class="flex-1">
+              <p class="text-stone-800 dark:text-white font-bold">${item.sub}</p>
+              <p class="text-[10px] text-stone-500 dark:text-slate-400 font-black uppercase tracking-wider">${item.type} • ${dateString}</p>
+            </div>
+            <button onclick="deleteEntry('${item.sub}', ${item.date})" class="text-stone-300 hover:text-rose-500 transition-colors"><i class="fa-solid fa-trash-can text-xs"></i></button>
+          </div>
+        `;
+        delay += 20;
+      });
+
+      c.innerHTML = htmlString;
+    }
+
+    // --- TIMETABLE TAB ---
+    if(currentTab === 'timetable') {
+      Object.keys(timetable).forEach(day => {
+        if(!timetable[day].length) return;
+        let html = `
+        <div class="mb-8 animate-slide-up">
+          <h3 class="text-amber-700 font-black uppercase text-sm tracking-widest mb-3 ml-1">${day}</h3>
+          <div class="space-y-3">`;
+        
+        timetable[day].forEach(i => {
+          html += `
+          <div class="glass-card rounded-2xl p-4 flex justify-between items-center">
+            <div>
+              <b class="text-md block font-bold">${i.sub}</b>
+              <span class="text-stone-500 text-xs font-medium uppercase tracking-wider">${i.room}</span>
+            </div>
+            <span class="text-xs font-black text-amber-800 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100">${i.time}</span>
+          </div>`;
+        });
+        
+        c.innerHTML += html + `</div></div>`;
+      });
+    }
+
+  } catch (err) {
+    // Debugger display
+    console.error("Render Debug Error:", err);
+    document.getElementById("content").innerHTML = `
+      <div class="h-full flex flex-col items-center justify-center p-6 text-center text-rose-500">
+        <i class="fa-solid fa-bug text-4xl mb-4"></i>
+        <h3 class="text-lg font-black mb-2">Code Crashed</h3>
+        <p class="text-xs text-stone-500 mb-4">Take a screenshot of this error box and show it to me:</p>
+        <div class="bg-rose-100 dark:bg-rose-900/50 p-3 rounded-lg w-full text-left overflow-auto border border-rose-200">
+          <code class="text-[10px] font-mono break-all">${err.message}</code>
+        </div>
+      </div>`;
   }
 }
+
+// --- RECOVERY SCRIPTS ---
+
+window.recoverKJData = async function() {
+  if(!data) { alert("Wait a second for the database to connect, then try again."); return; }
+  data.KJ = {
+    target: data.KJ?.target || 75, holidayMode: data.KJ?.holidayMode || false,
+    "COD": { p: 23, t: 29, history: [] }, "DBMS": { p: 31, t: 37, history: [] }, "DBMS Lab": { p: 9, t: 10, history: [] },
+    "Java": { p: 25, t: 29, history: [] }, "Java Lab": { p: 9, t: 9, history: [] }, "ANN": { p: 23, t: 29, history: [] },
+    "ANN Lab": { p: 7, t: 8, history: [] }, "Life Skills": { p: 18, t: 19, history: [] }
+  };
+  await setDoc(doc(db, "attendance", "shared"), data);
+  alert("KJ's Data Recovered! The page will now reload.");
+  location.reload();
+}
+
+window.recoverTaaraaData = async function() {
+  if(!data) { alert("Wait a second for the database to connect, then try again."); return; }
+  data.Taaraa = {
+    target: data.Taaraa?.target || 75, holidayMode: data.Taaraa?.holidayMode || false,
+    "COD": { p: 22, t: 27, history: [] }, "DBMS": { p: 32, t: 36, history: [] }, "DBMS Lab": { p: 8, t: 9, history: [] },
+    "Java": { p: 23, t: 27, history: [] }, "Java Lab": { p: 9, t: 9, history: [] }, "ANN": { p: 24, t: 28, history: [] },
+    "ANN Lab": { p: 8, t: 8, history: [] }, "Life Skills": { p: 17, t: 18, history: [] }
+  };
+  await setDoc(doc(db, "attendance", "shared"), data);
+  alert("Taaraa's Data Recovered! The page will now reload.");
+  location.reload();
+}
+
 async function load() {
   onSnapshot(
     doc(db, "attendance", "shared"), 
     async (snap) => {
       if (snap.exists()) { 
-        let dbData = snap.data();
-        let needsMigration = false;
-
-        // --- DATA MIGRATION CHECK ---
-        // If it finds the old names, it copies the data to the new names
-        if (dbData.kartik || dbData.tara) {
-          console.log("Old names found! Migrating data to KJ and Taaraa...");
-          
-          if (dbData.kartik) {
-            dbData.KJ = dbData.kartik; // Copy kartik's data to KJ
-            delete dbData.kartik;      // Delete the old kartik data
-          }
-          if (dbData.tara) {
-            dbData.Taaraa = dbData.tara; // Copy tara's data to Taaraa
-            delete dbData.tara;          // Delete the old tara data
-          }
-          needsMigration = true;
-        }
-
-        if (needsMigration) {
-          // Save the newly renamed data back to Firebase
-          await setDoc(doc(db, "attendance", "shared"), dbData);
-          // Note: Saving it will automatically trigger this function again to render it
-        } else {
-          // If no migration was needed, just load the app normally
-          data = dbData; 
-          render(); 
-        }
-
-      } else {
-        // This runs if the database is completely empty
-        console.log("No data found, creating initial database...");
-        data = {
-          KJ: { target: 75, holidayMode: false },
-          Taaraa: { target: 75, holidayMode: false }
-        };
-        await setDoc(doc(db, "attendance", "shared"), data);
-        render();
+        data = snap.data(); 
+        render(); 
+      } else { 
+        data = { KJ: { target: 75, holidayMode: false }, Taaraa: { target: 75, holidayMode: false } }; 
+        await setDoc(doc(db, "attendance", "shared"), data); 
+        render(); 
       }
     }, 
-    (error) => {
-      console.error("Firebase Error: ", error);
+    (error) => { 
+      console.error("Firebase Error: ", error); 
       document.getElementById("content").innerHTML = `
         <div class="h-full flex flex-col items-center justify-center p-6 text-center">
           <i class="fa-solid fa-triangle-exclamation text-4xl text-rose-500 mb-4"></i>
           <h3 class="text-lg font-black text-stone-800 dark:text-white mb-2">Database Error</h3>
           <p class="text-sm text-stone-500 mb-4">${error.message}</p>
-        </div>`;
+        </div>`; 
     }
   );
 }
+
 load();
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('Service Worker registered!', reg))
-      .catch(err => console.log('Service Worker failed:', err));
-  });
+
+if ('serviceWorker' in navigator) { 
+  window.addEventListener('load', () => { 
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); 
+  }); 
 }
-  
-
-
-
-
 </script>
 </body>
 </html>
