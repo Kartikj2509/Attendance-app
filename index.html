@@ -156,7 +156,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
+import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const app = initializeApp({ apiKey: "AIzaSyA3R5plHfBl1VU2MOenTYIZJEKRQ0iIcZQ", authDomain: "attendance-ea8db.firebaseapp.com", projectId: "attendance-ea8db" });
 const db = getFirestore(app);
